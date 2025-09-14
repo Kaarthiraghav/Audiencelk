@@ -46,6 +46,6 @@ body, h2, h3, ul, li, table, th, td, a {
         <li><a href="../events/manage_events.php">Events</a></li>
         <li><a href="../bookings/manage_bookings.php">Bookings</a></li>
     </ul>
-    
+    <a href="../auth/logout.php">Logout</a>
 
     <?php include '../includes/footer.php'; ?>
