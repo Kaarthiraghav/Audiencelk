@@ -23,7 +23,10 @@ body, h2, h3, ul, li, table, th, td, a {
 }
 </style>
 
-    <h2>Admin Dashboard</h2>
+
+<div class="HomeCards1" style="justify-content:center; margin-top:40px;">
+  <div class="card" style="width:100%; max-width:900px;">
+    <h2 style="text-align:center;">Admin Dashboard</h2>
     <a href="<?php echo BASE_URL ?>events/add_event_categories.php" style="margin-left:16px;">Add Event Category</a>
     <ul>
         <li>Total Users: <?= $total_users ?></li>
@@ -32,7 +35,7 @@ body, h2, h3, ul, li, table, th, td, a {
         <li>Total Revenue: $<?= $total_revenue ?></li>
     </ul>
     <h3>Most Popular Events</h3>
-    <table border="1" cellpadding="5">
+    <table border="1" cellpadding="5" style="width:100%;margin-bottom:24px;">
         <tr><th>Event</th><th>Bookings</th></tr>
         <?php while ($row = $popular->fetch_assoc()): ?>
         <tr>
@@ -48,5 +51,7 @@ body, h2, h3, ul, li, table, th, td, a {
         <li><a href="../bookings/manage_bookings.php">Bookings</a></li>
     </ul>
     <a href="../auth/logout.php">Logout</a>
+  </div>
+</div>
 
-    <?php include '../includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>
