@@ -10,7 +10,7 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] !== 1 && $_SESSION['ro
 }
 
 // Fetch categories for dropdown (always fetch, not just on POST)
-$categories = $connection->query('SELECT id, category FROM event_categories');
+$categories = $connection->query('SELECT id, name FROM event_categories');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select id="category" name="category" required>
                     <option value="">Select Category</option>
                     <?php while ($row = $categories->fetch_assoc()): ?>
-                        <option value="<?= $row['id'] ?>"><?= htmlspecialchars($row['category']) ?></option>
+                        <option value="<?= $row['id'] ?>"><?= htmlspecialchars($row['name']) ?></option>
                     <?php endwhile; ?>
                 </select>
             </div>
