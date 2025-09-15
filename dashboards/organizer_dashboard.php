@@ -10,7 +10,7 @@ if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 2) {
 }
 $organizer_id = $_SESSION['user_id'];
 // Fetch events by organizer
-$events = $connection->query("SELECT e.*, c.category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.organizer_id = $organizer_id");
+$events = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN event_categories c ON e.category = c.name WHERE e.organizer_id = $organizer_id");
 ?>
     <h2>Your Events</h2>
     <a href="<?php echo BASE_URL ?>events/add_event.php">Add Event</a>
