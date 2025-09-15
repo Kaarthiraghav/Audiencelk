@@ -10,17 +10,29 @@ if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 2) {
 }
 $organizer_id = $_SESSION['user_id'];
 // Fetch events by organizer
-$events = $connection->query("SELECT * FROM events WHERE organizer_id = $organizer_id");
+$events = $connection->query("SELECT e.*, c.category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.organizer_id = $organizer_id");
 ?>
     <h2>Your Events</h2>
     <a href="<?php echo BASE_URL ?>events/add_event.php">Add Event</a>
     <table border="1" cellpadding="5">
-        <tr><th>Title</th><th>Category</th><th>Seats</th><th>Status</th><th>Bookings</th></tr>
+        <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Venue</th>
+            <th>Date & Time</th>
+            <th>Seats</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Bookings</th>
+        </tr>
         <?php while ($event = $events->fetch_assoc()): ?>
         <tr>
             <td><?= htmlspecialchars($event['title']) ?></td>
             <td><?= htmlspecialchars($event['category']) ?></td>
-            <td><?= $event['seats'] ?></td>
+            <td><?= htmlspecialchars($event['venue']) ?></td>
+            <td><?= date('d M Y, h:i A', strtotime($event['event_date'])) ?></td>
+            <td><?= $event['total_seats'] ?></td>
+            <td>₹<?= number_format($event['price'], 2) ?></td>
             <td><?= htmlspecialchars($event['status']) ?></td>
             <td>
                 <a href="?bookings=<?= $event['id'] ?>">View Bookings</a>
