@@ -10,7 +10,7 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] !== 1 && $_SESSION['ro
 }
 
 // Fetch categories for dropdown (always fetch, not just on POST)
-$categories = $connection->query('SELECT id, name FROM event_categories');
+$categories = $connection->query('SELECT id, category FROM event_categories');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
