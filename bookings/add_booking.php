@@ -2,7 +2,7 @@
 // Add booking (Student/Guest)
 session_start();
 include '../includes/db_connect.php';
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 3) {
     header('Location: ../auth/login.php');
     exit;
 }
@@ -10,12 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $event_id = intval($_POST['event_id'] ?? 0);
     $user_id = $_SESSION['user_id'];
     // Check seat availability
-    $result = $connection->query("SELECT seats FROM events WHERE id = $event_id");
+    $result = $connection->query("SELECT total_seats FROM events WHERE id = $event_id");
     $event = $result->fetch_assoc();
-    if ($event && $event['seats'] > 0) {
-    $connection->query("INSERT INTO bookings (event_id, user_id, status) VALUES ($event_id, $user_id, 'pending')");
-    $booking_id = $connection->insert_id;
-    $connection->query("UPDATE events SET seats = seats - 1 WHERE id = $event_id");
+    if ($event && $event['total_seats'] > 0) {
+    $booking_number = substr(str_shuffle(str_repeat('0123456789', 9)), 0, 9);
+    $connection->query("INSERT INTO bookings (event_id, user_id, seats, booking_number) VALUES ($event_id, $user_id, 1, '$booking_number')");
+        $booking_id = $connection->insert_id;
+        $connection->query("UPDATE events SET total_seats = total_seats - 1 WHERE id = $event_id");
         // Dummy payment integration: if event is paid, create payment record
     $eventPriceResult = $connection->query("SELECT price FROM events WHERE id = $event_id");
         $eventPrice = $eventPriceResult->fetch_assoc();
@@ -33,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 // Fetch events
-$events = $connection->query("SELECT * FROM events WHERE status='approved' AND seats > 0");
+$events = $connection->query("SELECT * FROM events WHERE status='approved' AND total_seats > 0");
 ?>
 <!DOCTYPE html>
 <html lang="en">

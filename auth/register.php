@@ -15,18 +15,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
     $role_id = intval($_POST['role_id'] ?? 0);
     $error = '';
     $success = '';
 
-    if ($name && $email && $password && $role_id) {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
-        $stmt->bind_param('sssi', $name, $email, $hash, $role_id);
-        if ($stmt->execute()) {
-            $success = 'Registration successful! You can now login.';
+    if ($name && $email && $password && $confirm_password && $role_id) {
+        if ($password !== $confirm_password) {
+            $error = 'Passwords do not match.';
         } else {
-            $error = 'Registration failed. Email may already exist.';
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
+            $stmt->bind_param('sssi', $name, $email, $hash, $role_id);
+            if ($stmt->execute()) {
+                $success = 'Registration successful! You can now login.';
+            } else {
+                $error = 'Registration failed. Email may already exist.';
+            }
         }
     } else {
         $error = 'Please fill all fields.';
@@ -53,7 +58,10 @@ include '../includes/header.php';
             
             <label for="password">Password</label>
             <input type="password" name="password" id="password" required>
-            
+
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" name="confirm_password" id="confirm_password" required>
+
             <label for="role_id">Role</label>
             <select name="role_id" id="role_id" required>
                 <option value="">Select Role</option>
