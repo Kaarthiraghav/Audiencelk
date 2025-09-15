@@ -30,11 +30,14 @@ include 'nav.php';
                 <?php if (isset($_SESSION['role_id'])): ?>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     <?php if ($_SESSION['role_id'] === 1): ?>
                         <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php">Admin Dashboard</a></li>
                     <?php elseif ($_SESSION['role_id'] === 2): ?>
                         <li><a href="<?php echo BASE_URL?>dashboards/organizer_dashboard.php">Organizer Dashboard</a></li>
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                     <?php if ($_SESSION['role_id'] === 2): ?>
