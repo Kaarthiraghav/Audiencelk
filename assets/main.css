@@ -35,12 +35,48 @@
 .beautiful-form select {
     padding: 12px 16px;
     border-radius: 8px;
-    border: 2px solid #333;
-    background: #2c2c2c;
-    color: #f1f1f1;
+    border: 2px solid #FFD700;
+    background: #232323;
+    color: #FFD700;
     font-size: 1em;
     transition: all 0.3s ease;
     outline: none;
+    width: 100%;
+    margin: 0 auto 0 0;
+    box-sizing: border-box;
+}
+
+.beautiful-form input[type="datetime-local"]::-webkit-input-placeholder,
+.beautiful-form input[type="text"]::-webkit-input-placeholder,
+.beautiful-form input[type="email"]::-webkit-input-placeholder,
+.beautiful-form input[type="password"]::-webkit-input-placeholder,
+.beautiful-form input[type="number"]::-webkit-input-placeholder {
+    color: #FFD700;
+    opacity: 0.7;
+}
+.beautiful-form input[type="datetime-local"]::-moz-placeholder,
+.beautiful-form input[type="text"]::-moz-placeholder,
+.beautiful-form input[type="email"]::-moz-placeholder,
+.beautiful-form input[type="password"]::-moz-placeholder,
+.beautiful-form input[type="number"]::-moz-placeholder {
+    color: #FFD700;
+    opacity: 0.7;
+}
+.beautiful-form input[type="datetime-local"]:-ms-input-placeholder,
+.beautiful-form input[type="text"]:-ms-input-placeholder,
+.beautiful-form input[type="email"]:-ms-input-placeholder,
+.beautiful-form input[type="password"]:-ms-input-placeholder,
+.beautiful-form input[type="number"]:-ms-input-placeholder {
+    color: #FFD700;
+    opacity: 0.7;
+}
+.beautiful-form input[type="datetime-local"]::placeholder,
+.beautiful-form input[type="text"]::placeholder,
+.beautiful-form input[type="email"]::placeholder,
+.beautiful-form input[type="password"]::placeholder,
+.beautiful-form input[type="number"]::placeholder {
+    color: #FFD700;
+    opacity: 0.7;
 }
 
 .beautiful-form input[type="text"]:focus,
@@ -70,8 +106,14 @@
 
 .button-backtohome {
     margin-top: 18px;
-    width: 100%;
+    width: 80%;
+    max-width: 350px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 html, body {
     height: 100%;
