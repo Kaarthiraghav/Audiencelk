@@ -1,3 +1,62 @@
+/* Add Event Form Styles */
+.beautiful-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.beautiful-form label {
+    color: #FFD700;
+    font-weight: 600;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.beautiful-form input[type="text"],
+.beautiful-form input[type="number"],
+.beautiful-form select {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1.5px solid #FFD700;
+    background: #181818;
+    color: #f1f1f1;
+    font-size: 1em;
+    transition: border 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.beautiful-form input[type="text"]:focus,
+.beautiful-form input[type="number"]:focus,
+.beautiful-form select:focus {
+    border-color: #FFD700;
+    box-shadow: 0 0 8px #FFD70044;
+}
+
+.beautiful-form input[type="file"] {
+    color: #f1f1f1;
+    background: none;
+    border: none;
+    font-size: 1em;
+}
+
+.beautiful-form button[type="submit"] {
+    font-size: 1.1em;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.button-backtohome {
+    margin-top: 18px;
+    width: 100%;
+    text-align: center;
+}
 html, body {
     height: 100%;
 }

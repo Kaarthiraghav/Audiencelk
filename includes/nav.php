@@ -1,3 +1,3 @@
 <?php
 
-define('BASE_URL', 'http://localhost/WebFinalProject/');
+define('BASE_URL', 'http://localhost/AudienceLK/');

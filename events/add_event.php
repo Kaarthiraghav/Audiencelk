@@ -1,8 +1,10 @@
 <?php
 // Add event (Organizer/Admin)
 session_start();
+$pageTitle = 'Add Event';
+include '../includes/header.php';
 include '../includes/db_connect.php';
-if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'organizer')) {
+if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] !== 1 && $_SESSION['role_id'] !== 2)) {
     header('Location: ../auth/login.php');
     exit;
 }
@@ -29,26 +31,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Event</title>
-    <link rel="stylesheet" href="../assets/main.css">
-</head>
-<body>
-    <h2>Add Event</h2>
-    <form method="post" enctype="multipart/form-data">
-        <input type="text" name="title" placeholder="Event Title" required><br>
-        <select name="category">
-            <option value="cultural">Cultural</option>
-            <option value="academic">Academic</option>
-            <option value="sports">Sports</option>
-        </select><br>
-        <input type="number" name="seats" placeholder="Seats" required><br>
-        <input type="file" name="image" accept="image/*"><br>
-        <input type="submit" value="Add Event">
-    </form>
-    <a href="manage_events.php">Back</a>
-</body>
-</html>
+
+<div class="HomeCards1">
+    <div class="card">
+        <form method="post" enctype="multipart/form-data" class="beautiful-form">
+            <h2 style="margin-bottom: 18px; font-size: 2em; color: #FFD700; letter-spacing: 1px; text-align:center;">Add Event</h2>
+            <div class="form-group">
+                <label for="title">Event Title</label>
+                <input type="text" id="title" name="title" placeholder="Event Title" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="cultural">Cultural</option>
+                    <option value="academic">Academic</option>
+                    <option value="sports">Sports</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="seats">Seats</label>
+                <input type="number" id="seats" name="seats" placeholder="Seats" required>
+            </div>
+            <div class="form-group">
+                <label for="image">Event Image</label>
+                <input type="file" id="image" name="image" accept="image/*">
+            </div>
+            <button type="submit" class="button-exploreevents" style="width:100%;margin-top:18px;">Add Event</button>
+            <a href="manage_events.php" class="button-backtohome" style="margin-top:18px;width:100%;text-align:center;">Back</a>
+        </form>
+    </div>
+</div>
+
+<?php include '../includes/footer.php'; ?>

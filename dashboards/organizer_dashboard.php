@@ -4,7 +4,7 @@ session_start();
 $pageTitle = 'Organizer Dashboard';
 include '../includes/header.php';
 include '../includes/db_connect.php';
-if (!isset($_SESSION['role']) || $_SESSION['role_id'] !== 2) {
+if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 2) {
     header('Location: ../auth/login.php');
     exit;
 }
@@ -13,7 +13,7 @@ $organizer_id = $_SESSION['user_id'];
 $events = $connection->query("SELECT * FROM events WHERE organizer_id = $organizer_id");
 ?>
     <h2>Your Events</h2>
-    <a href="../events/add_event.php">Add Event</a>
+    <a href="<?php echo BASE_URL ?>events/add_event.php">Add Event</a>
     <table border="1" cellpadding="5">
         <tr><th>Title</th><th>Category</th><th>Seats</th><th>Status</th><th>Bookings</th></tr>
         <?php while ($event = $events->fetch_assoc()): ?>
@@ -28,6 +28,8 @@ $events = $connection->query("SELECT * FROM events WHERE organizer_id = $organiz
         </tr>
         <?php endwhile; ?>
     </table>
+
+
     <?php
     // Show bookings for selected event
     if (isset($_GET['bookings'])) {
@@ -41,5 +43,4 @@ $events = $connection->query("SELECT * FROM events WHERE organizer_id = $organiz
         echo '</table>';
     }
     ?>
-    <a href="../auth/logout.php">Logout</a>
 <?php include '../includes/footer.php'; ?>

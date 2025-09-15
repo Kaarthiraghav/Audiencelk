@@ -24,6 +24,7 @@ body, h2, h3, ul, li, table, th, td, a {
 </style>
 
     <h2>Admin Dashboard</h2>
+    <a href="<?php echo BASE_URL ?>events/add_event_categories.php" style="margin-left:16px;">Add Event Category</a>
     <ul>
         <li>Total Users: <?= $total_users ?></li>
         <li>Total Events: <?= $total_events ?></li>
