@@ -11,7 +11,7 @@ if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 1) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     if ($name) {
-        $stmt = $connection->prepare('INSERT INTO event_categories (category) VALUES (?)');
+        $stmt = $connection->prepare('INSERT INTO event_categories (name) VALUES (?)');
         $stmt->bind_param('s', $name);
         $stmt->execute();
         header('Location: ../dashboards/admin_dashboard.php');
