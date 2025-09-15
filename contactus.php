@@ -28,7 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
-  <div class="form-container">
+<div class="HomeCards1">
+  <div class="card">
     <h2>Contact Us</h2>
     <form>
       <div class="form-group">
@@ -48,4 +49,5 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </div>
     </form>
   </div>
+</div>
 <?php include 'includes/footer.php'; ?>

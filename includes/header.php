@@ -49,5 +49,8 @@ include 'nav.php';
         <a href="<?php echo BASE_URL?>auth/login.php">
             <button class="button-exploreevents" style="margin-left: 24px;">Login</button>
         </a>
+        <a href="<?php echo BASE_URL?>auth/register.php">
+            <button class="button-exploreevents" style="margin-left: 24px;">Register</button>
+        </a>
     <?php endif; ?>
 </div>

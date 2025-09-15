@@ -5,7 +5,7 @@ $pageTitle = 'View Events';
 include '../includes/header.php';
 include '../includes/db_connect.php';
 // Fetch approved events
-$result = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN event_categories c ON e.category = c.name WHERE e.status='approved'");
+$result = $connection->query("SELECT e.*, c.category AS category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.status='approved'");
 ?>
 <div class="HomeCards1">
 <div class="card">
