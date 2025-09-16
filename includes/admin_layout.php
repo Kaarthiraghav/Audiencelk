@@ -317,13 +317,13 @@ include 'nav.php'; // Include BASE_URL definition
                 <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php" <?php echo $pageTitle == 'Admin Dashboard' ? 'class="active"' : ''; ?>>
                     <span>📊</span> Dashboard
                 </a></li>
-                <li><a href="<?php echo BASE_URL?>users/admin_manage_users.php" <?php echo $pageTitle == 'Manage Users' ? 'class="active"' : ''; ?>>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php#users" <?php echo $pageTitle == 'Manage Users' ? 'class="active"' : ''; ?>>
                     <span>👥</span> Users
                 </a></li>
-                <li><a href="<?php echo BASE_URL?>events/admin_manage_events.php" <?php echo $pageTitle == 'Manage Events' ? 'class="active"' : ''; ?>>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php#events" <?php echo $pageTitle == 'Manage Events' ? 'class="active"' : ''; ?>>
                     <span>🎭</span> Events
                 </a></li>
-                <li><a href="<?php echo BASE_URL?>events/admin_categories.php" <?php echo $pageTitle == 'Manage Categories' ? 'class="active"' : ''; ?>>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php#categories" <?php echo $pageTitle == 'Manage Categories' ? 'class="active"' : ''; ?>>
                     <span>🏷️</span> Categories
                 </a></li>
                 <li><a href="<?php echo BASE_URL?>bookings/admin_manage_bookings.php" <?php echo $pageTitle == 'Manage Bookings' ? 'class="active"' : ''; ?>>
