@@ -32,7 +32,6 @@ $recent_users_with_roles = $connection->query("SELECT u.id, u.username, u.email,
 ?>
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
     <h2>Admin Dashboard</h2>
     <a href="<?php echo BASE_URL ?>events/add_event_categories.php" style="margin-left:16px;">Add Event Category</a>
     <ul>
@@ -61,8 +60,6 @@ $recent_users_with_roles = $connection->query("SELECT u.id, u.username, u.email,
 
     <?php include '../includes/footer.php'; ?>
 =======
-=======
->>>>>>> Stashed changes
 <!-- Admin Dashboard Content -->
 <div class="admin-stats">
     <div class="stat-card">
@@ -250,7 +247,4 @@ $recent_users_with_roles = $connection->query("SELECT u.id, u.username, u.email,
 </div>
 
 <?php include '../includes/admin_footer.php'; ?>
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
