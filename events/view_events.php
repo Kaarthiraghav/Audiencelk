@@ -10,11 +10,8 @@ $pageTitle = 'View Events';
 include '../includes/header.php';
 include '../includes/db_connect.php';
 // Fetch approved events
-<<<<<<< Updated upstream
 $result = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN event_categories c ON e.category = c.name WHERE e.status='approved'");
-=======
 $result = $connection->query("SELECT e.*, c.name AS category_name FROM events e LEFT JOIN event_categories c ON e.category = c.name WHERE e.status='approved'");
->>>>>>> Stashed changes
 ?>
 <div class="HomeCards1">
 <div class="card">
