@@ -1,6 +1,11 @@
 <?php
 // Edit event (Organizer/Admin)
 session_start();
+$csrf_token = null;
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 include '../includes/db_connect.php';
 if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'organizer')) {
     header('Location: ../auth/login.php');
@@ -8,9 +13,13 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['ro
 }
 $id = intval($_GET['id'] ?? 0);
 if ($id) {
-    $result = $connection->query("SELECT * FROM events WHERE id = $id");
+    $stmt = $connection->prepare("SELECT * FROM events WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $event = $result->fetch_assoc();
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt->close();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         $title = trim($_POST['title'] ?? '');
         $category = $_POST['category'] ?? '';
         $seats = intval($_POST['seats'] ?? 0);
@@ -22,7 +31,10 @@ if ($id) {
                 $image = basename($_FILES['image']['name']);
             }
         }
-    $connection->query("UPDATE events SET title='$title', category='$category', seats=$seats, status='$status', image='$image' WHERE id=$id");
+        $stmt = $connection->prepare("UPDATE events SET title=?, category=?, seats=?, status=?, image=? WHERE id=?");
+        $stmt->bind_param("ssissi", $title, $category, $seats, $status, $image, $id);
+        $stmt->execute();
+        $stmt->close();
         header('Location: manage_events.php');
         exit;
     }
@@ -39,6 +51,7 @@ if ($id) {
     <h2>Edit Event</h2>
     <?php if ($event): ?>
     <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
         <input type="text" name="title" value="<?= htmlspecialchars($event['title']) ?>" required><br>
         <select name="category">
             <option value="cultural" <?= $event['category']=='cultural'?'selected':'' ?>>Cultural</option>

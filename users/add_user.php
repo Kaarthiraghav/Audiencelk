@@ -1,6 +1,11 @@
 <?php
 // Admin: Add user
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 $pageTitle = "Add User";
 include '../includes/db_connect.php';
 include '../includes/header.php';
@@ -14,16 +19,17 @@ if (!isset($_SESSION['role']) || $_SESSION['role_id'] !== 1) {
     header('Location: ../auth/login.php');
     exit;
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $role_id = intval($_POST['role_id'] ?? 0);
     if ($username && $email && $password && $role_id) {
         $hash = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
+        $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
         $stmt->bind_param('sssi', $username, $email, $hash, $role_id);
         $stmt->execute();
+        $stmt->close();
         header('Location: manage_users.php');
         exit;
     }
@@ -32,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <h2>Add User</h2>
     <form method="post">
+        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
         <input type="text" name="username" placeholder="Username" required><br>
         <input type="email" name="email" placeholder="Email" required><br>
         <input type="password" name="password" placeholder="Password" required><br>

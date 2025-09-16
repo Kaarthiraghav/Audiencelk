@@ -1,11 +1,22 @@
 <?php
 // Public: View all events, book if logged in
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 $pageTitle = 'View Events';
 include '../includes/header.php';
 include '../includes/db_connect.php';
-// Fetch approved events
-$result = $connection->query("SELECT e.*, c.category AS category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.status='approved'");
+// Fetch approved events using prepared statement
+$sql = "SELECT e.*, c.category AS category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.status=?";
+$stmt = $connection->prepare($sql);
+$status = 'approved';
+$stmt->bind_param("s", $status);
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
 ?>
 <div class="HomeCards1">
 <div class="card">
@@ -24,6 +35,7 @@ $result = $connection->query("SELECT e.*, c.category AS category FROM events e J
                     <?php elseif (isset($_SESSION['user_id']) && $_SESSION['role_id'] === 3): ?>
                         <form action="../bookings/add_booking.php" method="post" style="display:inline;">
                             <input type="hidden" name="event_id" value="<?= $row['id'] ?>">
+                            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                             <input type="submit" value="Book Now">
                         </form>
                     <?php elseif (isset($_SESSION['user_id'])): ?>
