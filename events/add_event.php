@@ -1,6 +1,11 @@
 <?php
 // Add event (Organizer/Admin)
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 $pageTitle = 'Add Event';
 include '../includes/header.php';
 include '../includes/db_connect.php';
@@ -10,9 +15,9 @@ if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] !== 1 && $_SESSION['ro
 }
 
 // Fetch categories for dropdown (always fetch, not just on POST)
-$categories = $connection->query('SELECT id, name FROM event_categories');
+$categories = $connection->query('SELECT id, category FROM event_categories');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
     $title = trim($_POST['title'] ?? '');
     $category_id = intval($_POST['category'] ?? 0);
     $seats = intval($_POST['seats'] ?? 0);
@@ -70,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="HomeCards1">
     <div class="card">
         <form method="post" enctype="multipart/form-data" class="beautiful-form">
+            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
             <h2 style="margin-bottom: 18px; font-size: 2em; color: #FFD700; letter-spacing: 1px; text-align:center;">Add Event</h2>
             <div class="form-group">
                 <label for="title">Event Title</label>
@@ -80,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select id="category" name="category" required>
                     <option value="">Select Category</option>
                     <?php while ($row = $categories->fetch_assoc()): ?>
-                        <option value="<?= $row['id'] ?>"><?= htmlspecialchars($row['name']) ?></option>
+                        <option value="<?= $row['id'] ?>"><?= htmlspecialchars($row['category']) ?></option>
                     <?php endwhile; ?>
                 </select>
             </div>

@@ -1,6 +1,11 @@
 <?php
 // Admin: Manage users (CRUD)
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 $pageTitle = 'Manage Users';
 include '../includes/db_connect.php';
 include '../includes/header.php';
@@ -9,9 +14,12 @@ if (!isset($_SESSION['role']) || $_SESSION['role_id'] !== 1) {
     exit;
 }
 // Handle delete
-if (isset($_GET['delete'])) {
+if (isset($_GET['delete']) && isset($_GET['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_GET['csrf_token'])) {
     $id = intval($_GET['delete']);
-    $connection->query("DELETE FROM users WHERE id = $id");
+    $stmt = $connection->prepare("DELETE FROM users WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $stmt->close();
 }
 // Fetch users with role name
 $result = $connection->query('SELECT u.id, u.username, u.email, r.role FROM users u LEFT JOIN roles r ON u.role_id = r.id');
@@ -28,7 +36,7 @@ $result = $connection->query('SELECT u.id, u.username, u.email, r.role FROM user
             <td><?= htmlspecialchars($row['role']) ?></td>
             <td>
                 <a href="edit_user.php?id=<?= $row['id'] ?>">Edit</a> |
-                <a href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete user?')">Delete</a>
+                <a href="?delete=<?= $row['id'] ?>&csrf_token=<?= $csrf_token ?>" onclick="return confirm('Delete user?')">Delete</a>
             </td>
         </tr>
         <?php endwhile; ?>

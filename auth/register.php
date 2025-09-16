@@ -21,17 +21,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $success = '';
 
     if ($name && $email && $password && $confirm_password && $role_id) {
-        if ($password !== $confirm_password) {
+        if (strlen($password) < 8) {
+            $error = 'Password must be at least 8 characters.';
+        } elseif ($password !== $confirm_password) {
             $error = 'Passwords do not match.';
         } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
-            $stmt->bind_param('sssi', $name, $email, $hash, $role_id);
-            if ($stmt->execute()) {
-                $success = 'Registration successful! You can now login.';
+            // Check for unique email and username
+            $checkStmt = $connection->prepare('SELECT id FROM users WHERE email = ? OR username = ?');
+            $checkStmt->bind_param('ss', $email, $name);
+            $checkStmt->execute();
+            $checkStmt->store_result();
+            if ($checkStmt->num_rows > 0) {
+                $error = 'Email or username already exists.';
             } else {
-                $error = 'Registration failed. Email may already exist.';
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
+                $stmt->bind_param('sssi', $name, $email, $hash, $role_id);
+                if ($stmt->execute()) {
+                    $success = 'Registration successful! You can now login.';
+                } else {
+                    $error = 'Registration failed. Please try again.';
+                }
             }
+            $checkStmt->close();
         }
     } else {
         $error = 'Please fill all fields.';

@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $DB_HOST = 'localhost';
 $DB_USER = 'root';
-$DB_PASS = '';  // Default XAMPP has no password for root user
+$DB_PASS = 'Qwerty@1234';  // Default XAMPP has no password for root user
 $DB_NAME = 'audiencelk';
 
 

@@ -1,28 +1,50 @@
 <?php
 // Add booking (Student/Guest)
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 include '../includes/db_connect.php';
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 3) {
     header('Location: ../auth/login.php');
     exit;
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
     $event_id = intval($_POST['event_id'] ?? 0);
     $user_id = $_SESSION['user_id'];
     // Check seat availability
-    $result = $connection->query("SELECT seats FROM events WHERE id = $event_id");
+    $stmt = $connection->prepare("SELECT total_seats FROM events WHERE id = ?");
+    $stmt->bind_param("i", $event_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $event = $result->fetch_assoc();
-    if ($event && $event['seats'] > 0) {
+    $stmt->close();
+    if ($event && $event['total_seats'] > 0) {
         $booking_number = substr(str_shuffle(str_repeat('0123456789', 9)), 0, 9);
-        $connection->query("INSERT INTO bookings (event_id, user_id, booking_number) VALUES ($event_id, $user_id, '$booking_number')");
+        $stmt = $connection->prepare("INSERT INTO bookings (event_id, user_id, seats, booking_number) VALUES (?, ?, 1, ?)");
+        $stmt->bind_param("iis", $event_id, $user_id, $booking_number);
+        $stmt->execute();
         $booking_id = $connection->insert_id;
-        $connection->query("UPDATE events SET seats = seats - 1 WHERE id = $event_id");
+        $stmt->close();
+        $stmt = $connection->prepare("UPDATE events SET total_seats = total_seats - 1 WHERE id = ?");
+        $stmt->bind_param("i", $event_id);
+        $stmt->execute();
+        $stmt->close();
         // Dummy payment integration: if event is paid, create payment record
-    $eventPriceResult = $connection->query("SELECT price FROM events WHERE id = $event_id");
+        $stmt = $connection->prepare("SELECT price FROM events WHERE id = ?");
+        $stmt->bind_param("i", $event_id);
+        $stmt->execute();
+        $eventPriceResult = $stmt->get_result();
         $eventPrice = $eventPriceResult->fetch_assoc();
+        $stmt->close();
         if ($eventPrice && $eventPrice['price'] > 0) {
             $amount = $eventPrice['price'];
-            $connection->query("INSERT INTO payments (user_id, booking_id, amount, status) VALUES ($user_id, $booking_id, $amount, 'pending')");
+            $stmt = $connection->prepare("INSERT INTO payments (booking_id, amount, status) VALUES (?, ?, 'pending')");
+            $stmt->bind_param("id", $booking_id, $amount);
+            $stmt->execute();
+            $stmt->close();
             // Redirect to dummy payment page (to be implemented)
             header('Location: ../payments/confirm_payment.php?booking_id=' . $booking_id);
             exit;
@@ -34,7 +56,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 // Fetch events
-$events = $connection->query("SELECT * FROM events WHERE status='approved' AND seats > 0");
+$stmt = $connection->prepare("SELECT * FROM events WHERE status=? AND total_seats > 0");
+$status = 'approved';
+$stmt->bind_param("s", $status);
+$stmt->execute();
+$events = $stmt->get_result();
+$stmt->close();
 ?>
 <?php
 $pageTitle = 'Book Event';

@@ -26,9 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $bookings = $connection->query("SELECT b.*, e.title FROM bookings b JOIN events e ON b.event_id = e.id WHERE b.user_id = $user_id");
 $user = $connection->query("SELECT * FROM users WHERE id = $user_id")->fetch_assoc();
 ?>
-    <h2>Welcome, <?= htmlspecialchars($user['username']) ?></h2>
+
+<div class="HomeCards1" style="justify-content:center; margin-top:40px;">
+  <div class="card" style="width:100%; max-width:700px;">
+    <h2 style="text-align:center;">Welcome, <?= htmlspecialchars($user['username']) ?></h2>
     <h3>Your Bookings</h3>
-    <table border="1" cellpadding="5">
+    <table border="1" cellpadding="5" style="width:100%;margin-bottom:24px;">
         <tr><th>Event</th><th>Status</th><th>Actions</th></tr>
         <?php while ($row = $bookings->fetch_assoc()): ?>
         <tr>
@@ -48,4 +51,7 @@ $user = $connection->query("SELECT * FROM users WHERE id = $user_id")->fetch_ass
         <input type="password" name="password" placeholder="New Password"><br>
         <input type="submit" value="Update Profile">
     </form>
+  </div>
+</div>
+
 <?php include '../includes/footer.php'; ?>

@@ -1,4 +1,5 @@
 <?php
+
 // Organizer Dashboard: Add/view events, view bookings for own events
 session_start();
 $pageTitle = 'Organizer Dashboard';
@@ -10,11 +11,14 @@ if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 2) {
 }
 $organizer_id = $_SESSION['user_id'];
 // Fetch events by organizer
-$events = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN event_categories c ON e.category = c.name WHERE e.organizer_id = $organizer_id");
+$events = $connection->query("SELECT e.*, c.category AS category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.organizer_id = $organizer_id");
 ?>
-    <h2>Your Events</h2>
-    <a href="<?php echo BASE_URL ?>events/add_event.php">Add Event</a>
-    <table border="1" cellpadding="5">
+
+<div class="HomeCards1" style="justify-content:center; margin-top:40px;">
+  <div class="card" style="width:100%; max-width:1100px;">
+    <h2 style="text-align:center;">Your Events</h2>
+    <a href="<?php echo BASE_URL ?>events/add_event.php" style="margin-bottom:18px;display:inline-block;">Add Event</a>
+    <table border="1" cellpadding="5" style="width:100%;margin-bottom:24px;">
         <tr>
             <th>Title</th>
             <th>Category</th>
@@ -32,7 +36,7 @@ $events = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN 
             <td><?= htmlspecialchars($event['venue']) ?></td>
             <td><?= date('d M Y, h:i A', strtotime($event['event_date'])) ?></td>
             <td><?= $event['total_seats'] ?></td>
-            <td>₹<?= number_format($event['price'], 2) ?></td>
+            <td>LKR <?= number_format($event['price'], 2) ?></td>
             <td><?= htmlspecialchars($event['status']) ?></td>
             <td>
                 <a href="?bookings=<?= $event['id'] ?>">View Bookings</a>
@@ -41,18 +45,20 @@ $events = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN 
         <?php endwhile; ?>
     </table>
 
-
     <?php
     // Show bookings for selected event
     if (isset($_GET['bookings'])) {
         $event_id = intval($_GET['bookings']);
-        $bookings = $conn->query("SELECT b.*, u.name FROM bookings b JOIN users u ON b.user_id = u.id WHERE b.event_id = $event_id");
+        $bookings = $connection->query("SELECT b.*, u.username FROM bookings b JOIN users u ON b.user_id = u.id WHERE b.event_id = $event_id");
         echo '<h3>Bookings for Event #' . $event_id . '</h3>';
-        echo '<table border="1" cellpadding="5"><tr><th>User</th><th>Status</th></tr>';
+        echo '<table border="1" cellpadding="5" style="width:100%;"><tr><th>User</th><th>Status</th></tr>';
         while ($row = $bookings->fetch_assoc()) {
             echo '<tr><td>' . htmlspecialchars($row['name']) . '</td><td>' . htmlspecialchars($row['status']) . '</td></tr>';
         }
         echo '</table>';
     }
     ?>
+  </div>
+</div>
+
 <?php include '../includes/footer.php'; ?>

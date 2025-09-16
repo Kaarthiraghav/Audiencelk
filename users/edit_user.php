@@ -1,6 +1,13 @@
 <?php
 // Admin: Edit user
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
+$pageTitle = "Edit User";
+include '../includes/header.php';
 include '../includes/db_connect.php';
 // Fetch roles for dropdown
 $roles = [];
@@ -14,29 +21,29 @@ if (!isset($_SESSION['role']) || $_SESSION['role_id'] !== 1) {
 }
 $id = intval($_GET['id'] ?? 0);
 if ($id) {
-    $result = $connection->query("SELECT * FROM users WHERE id = $id");
+    $stmt = $connection->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $user = $result->fetch_assoc();
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt->close();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $role_id = intval($_POST['role_id'] ?? 0);
-    $connection->query("UPDATE users SET username='$username', email='$email', role_id=$role_id WHERE id=$id");
+        $stmt = $connection->prepare("UPDATE users SET username = ?, email = ?, role_id = ? WHERE id = ?");
+        $stmt->bind_param('ssii', $username, $email, $role_id, $id);
+        $stmt->execute();
+        $stmt->close();
         header('Location: manage_users.php');
         exit;
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit User</title>
-    <link rel="stylesheet" href="../assets/main.css">
-</head>
-<body>
     <h2>Edit User</h2>
     <?php if ($user): ?>
     <form method="post">
+        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
         <input type="text" name="username" value="<?= htmlspecialchars($user['username']) ?>" required><br>
         <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required><br>
         <select name="role_id" required>
@@ -49,5 +56,4 @@ if ($id) {
     </form>
     <?php endif; ?>
     <a href="manage_users.php">Back</a>
-</body>
-</html>
+<?php include '../includes/footer.php'; ?>

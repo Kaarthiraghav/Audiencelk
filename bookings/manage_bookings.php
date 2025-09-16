@@ -1,6 +1,11 @@
 <?php
 // Booking system: Manage bookings
+$csrf_token = null;
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 $pageTitle = 'Manage Bookings';
 include '../includes/header.php';
 include '../includes/db_connect.php';
@@ -19,61 +24,39 @@ if (!isset($_SESSION['role'])) {
 }
 $role = $_SESSION['role'];
 $user_id = $_SESSION['user_id'];
-
-// Handle cancel with prepared statements
-if (isset($_GET['cancel'])) {
+// Handle cancel
+if (isset($_GET['cancel']) && isset($_GET['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_GET['csrf_token'])) {
     $id = intval($_GET['cancel']);
+    // Delete related payments first to avoid foreign key constraint error
+    $stmt = $connection->prepare("DELETE FROM payments WHERE booking_id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+    // Remove booking record
+    $stmt = $connection->prepare("DELETE FROM bookings WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+    // Free up seat
     $event_id = intval($_GET['event_id']);
-    
-    // Use transactions to ensure all operations complete or none do
-    $connection->begin_transaction();
-    
-    try {
-        // Delete related payments first to avoid foreign key constraint error
-        $stmt1 = $connection->prepare("DELETE FROM payments WHERE booking_id = ?");
-        $stmt1->bind_param('i', $id);
-        $stmt1->execute();
-        $stmt1->close();
-        
-        // Remove booking record
-        $stmt2 = $connection->prepare("DELETE FROM bookings WHERE id = ?");
-        $stmt2->bind_param('i', $id);
-        $stmt2->execute();
-        $stmt2->close();
-        
-        // Free up seat
-        $stmt3 = $connection->prepare("UPDATE events SET seats = seats + 1 WHERE id = ?");
-        $stmt3->bind_param('i', $event_id);
-        $stmt3->execute();
-        $stmt3->close();
-        
-        // If we got here, commit the changes
-        $connection->commit();
-    } catch (Exception $e) {
-        // An error occurred; rollback the transaction
-        $connection->rollback();
-    }
+    $stmt = $connection->prepare("UPDATE events SET total_seats = total_seats + 1 WHERE id = ?");
+    $stmt->bind_param("i", $event_id);
+    $stmt->execute();
+    $stmt->close();
 }
-
-// Fetch bookings with prepared statements
-if ($role === 'admin') {
-    $stmt = $connection->prepare("SELECT b.*, e.title, e.price, p.status AS payment_status 
-                                FROM bookings b 
-                                LEFT JOIN events e ON b.event_id = e.id 
-                                LEFT JOIN payments p ON b.id = p.booking_id");
+// Fetch bookings
+$where = ($role === 'admin') ? '' : "WHERE b.user_id = ?";
+$sql = "SELECT b.*, e.title, e.price, p.status AS payment_status FROM bookings b LEFT JOIN events e ON b.event_id = e.id LEFT JOIN payments p ON b.id = p.booking_id ";
+if ($where) {
+    $sql .= $where;
+    $stmt = $connection->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $stmt->close();
 } else {
-    $stmt = $connection->prepare("SELECT b.*, e.title, e.price, p.status AS payment_status 
-                                FROM bookings b 
-                                LEFT JOIN events e ON b.event_id = e.id 
-                                LEFT JOIN payments p ON b.id = p.booking_id 
-                                WHERE b.user_id = ?");
-    $stmt->bind_param('i', $user_id);
+    $result = $connection->query($sql);
 }
-
-$stmt->execute();
-$result = $stmt->get_result();
-$stmt->close();
-?>
 ?>
     <div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px; animation: fadeIn 0.8s ease-out;">
         <h1 class="page-title" style="text-align: center; margin-bottom: 30px; color: #FFD700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);">My Bookings</h1>

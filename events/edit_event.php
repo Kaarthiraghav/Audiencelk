@@ -1,6 +1,11 @@
 <?php
 // Edit event (Organizer/Admin)
 session_start();
+$csrf_token = null;
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf_token = $_SESSION['csrf_token'];
 include '../includes/db_connect.php';
 if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] !== 1 && $_SESSION['role_id'] !== 2)) {
     header('Location: ../auth/login.php');
@@ -27,34 +32,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id']) && isset(
 $id = intval($_GET['id'] ?? 0);
 if ($id) {
     $stmt = $connection->prepare("SELECT * FROM events WHERE id = ?");
-    $stmt->bind_param('i', $id);
+    $stmt->bind_param("i", $id);
     $stmt->execute();
     $result = $stmt->get_result();
     $event = $result->fetch_assoc();
     $stmt->close();
-    
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // If it's not a quick action (approve/reject)
-        if (!isset($_POST['action'])) {
-            $title = trim($_POST['title'] ?? '');
-            $category = $_POST['category'] ?? '';
-            $seats = intval($_POST['seats'] ?? 0);
-            $status = $_POST['status'] ?? $event['status'];
-            $image = $event['image'];
-            if (!empty($_FILES['image']['name'])) {
-                $target = '../assets/' . basename($_FILES['image']['name']);
-                if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
-                    $image = basename($_FILES['image']['name']);
-                }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token']) && hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $title = trim($_POST['title'] ?? '');
+        $category = $_POST['category'] ?? '';
+        $seats = intval($_POST['seats'] ?? 0);
+        $status = $_POST['status'] ?? $event['status'];
+        $image = $event['image'];
+        if (!empty($_FILES['image']['name'])) {
+            $target = '../assets/' . basename($_FILES['image']['name']);
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
+                $image = basename($_FILES['image']['name']);
             }
-            
-            $updateStmt = $connection->prepare("UPDATE events SET title=?, category=?, seats=?, status=?, image=? WHERE id=?");
-            $updateStmt->bind_param('ssissi', $title, $category, $seats, $status, $image, $id);
-            $updateStmt->execute();
-            $updateStmt->close();
-            header('Location: manage_events.php');
-            exit;
         }
+        $stmt = $connection->prepare("UPDATE events SET title=?, category=?, seats=?, status=?, image=? WHERE id=?");
+        $stmt->bind_param("ssissi", $title, $category, $seats, $status, $image, $id);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: manage_events.php');
+        exit;
     }
 }
 ?>
