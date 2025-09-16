@@ -20,7 +20,7 @@ if (isset($_GET['delete'])) {
 }
 
 // Fetch users with role name using prepared statement
-$users = $connection->query('SELECT u.id, u.username, u.email, r.role, u.created_at FROM users u LEFT JOIN roles r ON u.role_id = r.id ORDER BY u.id');
+$users = $connection->query('SELECT u.id, u.username, u.email, r.role FROM users u LEFT JOIN roles r ON u.role_id = r.id ORDER BY u.id');
 
 // Include admin layout
 include '../includes/admin_layout.php';
@@ -62,7 +62,7 @@ include '../includes/admin_layout.php';
                                 <span style="color: #69db7c;"><?= ucfirst(htmlspecialchars($user['role'])) ?></span>
                             <?php endif; ?>
                         </td>
-                        <td><?= isset($user['created_at']) ? date('M j, Y', strtotime($user['created_at'])) : 'N/A' ?></td>
+                        <td>N/A</td>
                         <td style="white-space: nowrap;">
                             <a href="../users/edit_user.php?id=<?= $user['id'] ?>" class="admin-btn admin-btn-small" style="margin-right: 5px;">Edit</a>
                             <a href="?delete=<?= $user['id'] ?>" onclick="return confirm('Are you sure you want to delete this user? This action cannot be undone.')" class="admin-btn admin-btn-small admin-btn-danger">Delete</a>

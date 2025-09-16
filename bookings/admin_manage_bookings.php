@@ -53,7 +53,7 @@ $stmt = $connection->prepare("SELECT b.*, e.title, e.price, p.status AS payment_
                             LEFT JOIN events e ON b.event_id = e.id 
                             LEFT JOIN payments p ON b.id = p.booking_id
                             LEFT JOIN users u ON b.user_id = u.id
-                            ORDER BY b.created_at DESC");
+                            ORDER BY b.id DESC");
 $stmt->execute();
 $bookings = $stmt->get_result();
 $stmt->close();

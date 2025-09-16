@@ -14,8 +14,8 @@ if (!isset($_SESSION['role_id']) || intval($_SESSION['role_id']) !== 1) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
     $name = trim($_POST['name']);
     if (!empty($name)) {
-        $stmt = $connection->prepare("INSERT INTO event_categories (name) VALUES (?)");
-        $stmt->bind_param('s', $name);
+    $stmt = $connection->prepare("INSERT INTO event_categories (category) VALUES (?)");
+    $stmt->bind_param('s', $name);
         $stmt->execute();
         $stmt->close();
     }
@@ -31,7 +31,7 @@ if (isset($_GET['delete'])) {
 }
 
 // Fetch categories
-$categories = $connection->query("SELECT * FROM event_categories ORDER BY name");
+$categories = $connection->query("SELECT * FROM event_categories ORDER BY category");
 
 // Include admin layout
 include '../includes/admin_layout.php';
@@ -65,7 +65,7 @@ include '../includes/admin_layout.php';
                     <?php while ($category = $categories->fetch_assoc()): ?>
                         <tr>
                             <td><?= $category['id'] ?></td>
-                            <td><?= htmlspecialchars($category['name']) ?></td>
+                            <td><?= htmlspecialchars($category['category']) ?></td>
                             <td>
                                 <a href="?delete=<?= $category['id'] ?>" onclick="return confirm('Are you sure you want to delete this category? This may affect events using this category.')" class="admin-btn admin-btn-small admin-btn-danger">Delete</a>
                             </td>

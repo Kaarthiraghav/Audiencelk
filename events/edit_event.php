@@ -62,10 +62,10 @@ if ($id) {
 $pageTitle = 'Edit Event';
 include '../includes/header.php';
 // Fetch categories for dropdown
-$categories_result = $connection->query('SELECT name FROM event_categories');
+$categories_result = $connection->query('SELECT category FROM event_categories');
 $categories = [];
 while ($cat = $categories_result->fetch_assoc()) {
-    $categories[] = $cat['name'];
+    $categories[] = $cat['category'];
 }
 ?>
     <div class="HomeCards1">
@@ -90,7 +90,7 @@ while ($cat = $categories_result->fetch_assoc()) {
                 
                 <div class="form-group">
                     <label for="seats">Available Seats</label>
-                    <input type="number" id="seats" name="seats" value="<?= $event['seats'] ?>" required>
+                    <input type="number" id="seats" name="seats" value="<?= $event['total_seats'] ?>" required>
                 </div>
                 
                 <div class="form-group">
@@ -101,20 +101,7 @@ while ($cat = $categories_result->fetch_assoc()) {
                         <option value="cancelled" <?= $event['status']=='cancelled'?'selected':'' ?>>Cancelled</option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label for="image">Event Image</label>
-                    <input type="file" id="image" name="image" accept="image/*">
-                </div>
-                
-                <?php if ($event['image']): ?>
-                <div class="form-group">
-                    <label>Current Image</label>
-                    <div class="current-image" style="margin-top: 10px;">
-                        <img src="../assets/<?= htmlspecialchars($event['image']) ?>" width="150" style="border-radius: 5px; border: 2px solid #FFD700;">
-                    </div>
-                </div>
-                <?php endif; ?>
+
                 
                 <button type="submit" class="button-exploreevents" style="width:100%;margin-top:18px;">Update Event</button>
                 <a href="manage_events.php" class="button-backtohome" style="margin-top:18px;width:100%;text-align:center;">Back to Events</a>

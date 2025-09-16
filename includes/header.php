@@ -18,13 +18,13 @@ include 'nav.php';
             color: #FFD700;
             font-family: 'Arial', sans-serif;
             transition: opacity 0.5s;
-            opacity: 0;
+            /* opacity: 0; */
         }
         
-        body.fade-in {
+        /* body.fade-in {
             opacity: 1;
         }
-        
+         */
         body, h1, h2, h3, h4, h5, h6, p, label, th, td, ul, li, a, div, span {
             color: #FFD700 !important;
         }
@@ -160,7 +160,6 @@ include 'nav.php';
                 <li><a href="<?php echo BASE_URL?>index.php" style="font-weight: 600;">Home</a></li>
                 <li><a href="<?php echo BASE_URL?>events/view_events.php" style="font-weight: 600;">Events</a></li>
                 <?php if (isset($_SESSION['role_id'])): ?>
-<<<<<<< Updated upstream
                     <?php if ($_SESSION['role_id'] === 1): ?>
                         <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php" style="font-weight: 600;">Admin Dashboard</a></li>
                     <?php elseif ($_SESSION['role_id'] === 2): ?>

@@ -19,8 +19,17 @@ if (isset($_GET['delete'])) {
     $stmt->close();
 }
 
+// Handle approve event (admin only)
+if (isset($_GET['approve'])) {
+    $id = intval($_GET['approve']);
+    $stmt = $connection->prepare("UPDATE events SET status = 'approved' WHERE id = ? AND status = 'pending'");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $stmt->close();
+}
+
 // Fetch events with prepared statement
-$stmt = $connection->prepare("SELECT e.*, c.name AS category_name FROM events e LEFT JOIN event_categories c ON e.category = c.name");
+$stmt = $connection->prepare("SELECT e.*, c.category AS category FROM events e LEFT JOIN event_categories c ON e.category_id = c.id");
 $stmt->execute();
 $events = $stmt->get_result();
 $stmt->close();
@@ -58,10 +67,10 @@ include '../includes/admin_layout.php';
                         <td><?= htmlspecialchars($event['title']) ?></td>
                         <td><?= htmlspecialchars($event['category']) ?></td>
                         <td>
-                            <?php if ($event['seats'] < 10): ?>
-                                <span style="color: #ff6b6b; font-weight: bold;"><?= $event['seats'] ?></span>
+                            <?php if ($event['total_seats'] < 10): ?>
+                                <span style="color: #ff6b6b; font-weight: bold;"><?= $event['total_seats'] ?></span>
                             <?php else: ?>
-                                <span style="color: #69db7c; font-weight: bold;"><?= $event['seats'] ?></span>
+                                <span style="color: #69db7c; font-weight: bold;"><?= $event['total_seats'] ?></span>
                             <?php endif; ?>
                         </td>
                         <td>LKR <?= number_format($event['price'], 2) ?></td>
@@ -76,7 +85,10 @@ include '../includes/admin_layout.php';
                         </td>
                         <td style="white-space: nowrap;">
                             <a href="../events/edit_event.php?id=<?= $event['id'] ?>" class="admin-btn admin-btn-small" style="margin-right: 5px;">Edit</a>
-                            <a href="?delete=<?= $event['id'] ?>" onclick="return confirm('Are you sure you want to delete this event? This action cannot be undone.')" class="admin-btn admin-btn-small admin-btn-danger">Delete</a>
+                            <a href="?delete=<?= $event['id'] ?>" onclick="return confirm('Are you sure you want to delete this event? This action cannot be undone.')" class="admin-btn admin-btn-small admin-btn-danger" style="margin-right: 5px;">Delete</a>
+                            <?php if ($event['status'] == 'pending'): ?>
+                                <a href="?approve=<?= $event['id'] ?>" onclick="return confirm('Approve this event?')" class="admin-btn admin-btn-small admin-btn-success">Approve</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endwhile; ?>

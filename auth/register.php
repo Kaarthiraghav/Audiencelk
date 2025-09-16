@@ -38,7 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
                 $stmt->bind_param('sssi', $name, $email, $hash, $role_id);
                 if ($stmt->execute()) {
-                    $success = 'Registration successful! You can now login.';
+                    header('Location: login.php');
+                    exit;
                 } else {
                     $error = 'Registration failed. Please try again.';
                 }
@@ -58,8 +59,6 @@ include '../includes/header.php';
         <h2>Register</h2>
         <?php if (!empty($error)): ?>
             <div class="message error"><?= htmlspecialchars($error) ?></div>
-        <?php elseif (!empty($success)): ?>
-            <div class="message success"><?= htmlspecialchars($success) ?></div>
         <?php endif; ?>
         <form method="post" id="signup-form">
             <label for="name">Name</label>

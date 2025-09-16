@@ -1,23 +1,28 @@
 <?php
-
-// Organizer Dashboard: Add/view events, view bookings for own events
+// Organizer Dashboard: stats, analytics, events
 session_start();
 $pageTitle = 'Organizer Dashboard';
-include '../includes/header.php';
 include '../includes/db_connect.php';
+include '../includes/admin_layout.php';
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 2) {
     header('Location: ../auth/login.php');
     exit;
 }
 $organizer_id = $_SESSION['user_id'];
+// Stats for organizer
+$total_events = $connection->query("SELECT COUNT(*) FROM events WHERE organizer_id = $organizer_id")->fetch_row()[0];
+$total_bookings = $connection->query("SELECT COUNT(*) FROM bookings b JOIN events e ON b.event_id = e.id WHERE e.organizer_id = $organizer_id")->fetch_row()[0];
+$total_revenue = $connection->query("SELECT SUM(p.amount) FROM payments p JOIN bookings b ON p.booking_id = b.id JOIN events e ON b.event_id = e.id WHERE e.organizer_id = $organizer_id AND p.status='success'")->fetch_row()[0] ?? 0;
 // Fetch events by organizer
 $events = $connection->query("SELECT e.*, c.category AS category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.organizer_id = $organizer_id");
 ?>
-
-<div class="HomeCards1" style="justify-content:center; margin-top:40px;">
-  <div class="card" style="width:100%; max-width:1100px;">
-    <h2 style="text-align:center;">Your Events</h2>
-    <a href="<?php echo BASE_URL ?>events/add_event.php" style="margin-bottom:18px;display:inline-block;">Add Event</a>
+    <h2>Organizer Dashboard</h2>
+    <ul>
+        <li>Total Events: <?= $total_events ?></li>
+        <li>Total Bookings: <?= $total_bookings ?></li>
+        <li>Total Revenue: $<?= $total_revenue ?></li>
+    </ul>
+    <h3>Your Events</h3>
     <table border="1" cellpadding="5" style="width:100%;margin-bottom:24px;">
         <tr>
             <th>Title</th>
@@ -44,7 +49,6 @@ $events = $connection->query("SELECT e.*, c.category AS category FROM events e J
         </tr>
         <?php endwhile; ?>
     </table>
-
     <?php
     // Show bookings for selected event
     if (isset($_GET['bookings'])) {
@@ -53,7 +57,7 @@ $events = $connection->query("SELECT e.*, c.category AS category FROM events e J
         echo '<h3>Bookings for Event #' . $event_id . '</h3>';
         echo '<table border="1" cellpadding="5" style="width:100%;"><tr><th>User</th><th>Status</th></tr>';
         while ($row = $bookings->fetch_assoc()) {
-            echo '<tr><td>' . htmlspecialchars($row['name']) . '</td><td>' . htmlspecialchars($row['status']) . '</td></tr>';
+            echo '<tr><td>' . htmlspecialchars($row['username']) . '</td><td>' . htmlspecialchars($row['status']) . '</td></tr>';
         }
         echo '</table>';
     }
