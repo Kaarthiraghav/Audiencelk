@@ -4,6 +4,36 @@
 session_start();
 include '../includes/db_connect.php';
 
+// Helper function to calculate time elapsed
+function time_elapsed_string($datetime, $full = false) {
+    $now = new DateTime;
+    $ago = new DateTime($datetime);
+    $diff = $now->diff($ago);
+
+    $diff->w = floor($diff->d / 7);
+    $diff->d -= $diff->w * 7;
+
+    $string = array(
+        'y' => 'year',
+        'm' => 'month',
+        'w' => 'week',
+        'd' => 'day',
+        'h' => 'hour',
+        'i' => 'minute',
+        's' => 'second',
+    );
+    foreach ($string as $k => &$v) {
+        if ($diff->$k) {
+            $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+        } else {
+            unset($string[$k]);
+        }
+    }
+
+    if (!$full) $string = array_slice($string, 0, 1);
+    return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
+
 // Check if user is admin
 if (!isset($_SESSION['role_id']) || $_SESSION['role_id'] !== 1) {
     header('Location: ../auth/admin-login.php');
@@ -28,17 +58,48 @@ $pageTitle = 'Admin Dashboard - AudienceLK';
 $message = '';
 $error = '';
 
-// Get comprehensive statistics
+// Get comprehensive statistics with month-over-month comparisons
 try {
+    if (!$connection) {
+        throw new Exception("Database connection is null");
+    }
+    
     $stats = [];
-    $stats['total_users'] = $connection->query('SELECT COUNT(*) FROM users')->fetch_row()[0];
-    $stats['total_events'] = $connection->query('SELECT COUNT(*) FROM events')->fetch_row()[0];
-    $stats['total_bookings'] = $connection->query('SELECT COUNT(*) FROM bookings')->fetch_row()[0];
-    $stats['total_revenue'] = $connection->query("SELECT SUM(amount) FROM payments WHERE status='confirmed'")->fetch_row()[0] ?? 0;
-    $stats['pending_events'] = $connection->query("SELECT COUNT(*) FROM events WHERE status='pending'")->fetch_row()[0];
-    $stats['active_events'] = $connection->query("SELECT COUNT(*) FROM events WHERE status='approved'")->fetch_row()[0];
-    $stats['new_users_today'] = $connection->query("SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURDATE()")->fetch_row()[0];
-    $stats['bookings_today'] = $connection->query("SELECT COUNT(*) FROM bookings WHERE DATE(booking_date) = CURDATE()")->fetch_row()[0];
+    $stats['total_users'] = $connection->query('SELECT COUNT(*) FROM users')->fetch_row()[0] ?? 0;
+    $stats['total_events'] = $connection->query('SELECT COUNT(*) FROM events')->fetch_row()[0] ?? 0;
+    $stats['total_bookings'] = $connection->query('SELECT COUNT(*) FROM bookings')->fetch_row()[0] ?? 0;
+    $stats['total_revenue'] = $connection->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status='confirmed'")->fetch_row()[0] ?? 0;
+    $stats['pending_events'] = $connection->query("SELECT COUNT(*) FROM events WHERE status='pending'")->fetch_row()[0] ?? 0;
+    $stats['active_events'] = $connection->query("SELECT COUNT(*) FROM events WHERE status='approved'")->fetch_row()[0] ?? 0;
+    $stats['new_users_today'] = $connection->query("SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0;
+    $stats['bookings_today'] = $connection->query("SELECT COUNT(*) FROM bookings WHERE DATE(booking_date) = CURDATE()")->fetch_row()[0] ?? 0;
+    
+    // Calculate month-over-month changes with safe defaults
+    $stats['users_this_month'] = $connection->query("SELECT COUNT(*) FROM users WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())")->fetch_row()[0] ?? 0;
+    $stats['users_last_month'] = $connection->query("SELECT COUNT(*) FROM users WHERE MONTH(created_at) = MONTH(CURDATE() - INTERVAL 1 MONTH) AND YEAR(created_at) = YEAR(CURDATE() - INTERVAL 1 MONTH)")->fetch_row()[0] ?? 0;
+    $stats['events_this_month'] = $connection->query("SELECT COUNT(*) FROM events WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())")->fetch_row()[0] ?? 0;
+    $stats['events_last_month'] = $connection->query("SELECT COUNT(*) FROM events WHERE MONTH(created_at) = MONTH(CURDATE() - INTERVAL 1 MONTH) AND YEAR(created_at) = YEAR(CURDATE() - INTERVAL 1 MONTH)")->fetch_row()[0] ?? 0;
+    $stats['bookings_this_month'] = $connection->query("SELECT COUNT(*) FROM bookings WHERE MONTH(booking_date) = MONTH(CURDATE()) AND YEAR(booking_date) = YEAR(CURDATE())")->fetch_row()[0] ?? 0;
+    $stats['bookings_last_month'] = $connection->query("SELECT COUNT(*) FROM bookings WHERE MONTH(booking_date) = MONTH(CURDATE() - INTERVAL 1 MONTH) AND YEAR(booking_date) = YEAR(CURDATE() - INTERVAL 1 MONTH)")->fetch_row()[0] ?? 0;
+    $stats['revenue_this_month'] = $connection->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status='confirmed' AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())")->fetch_row()[0] ?? 0;
+    $stats['revenue_last_month'] = $connection->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status='confirmed' AND MONTH(created_at) = MONTH(CURDATE() - INTERVAL 1 MONTH) AND YEAR(created_at) = YEAR(CURDATE() - INTERVAL 1 MONTH)")->fetch_row()[0] ?? 0;
+    
+    // Calculate percentage changes with safe math
+    $stats['users_change'] = ($stats['users_last_month'] > 0) ? 
+        round((($stats['users_this_month'] - $stats['users_last_month']) / $stats['users_last_month']) * 100, 1) : 
+        (($stats['users_this_month'] > 0) ? 100 : 0);
+    
+    $stats['events_change'] = ($stats['events_last_month'] > 0) ? 
+        round((($stats['events_this_month'] - $stats['events_last_month']) / $stats['events_last_month']) * 100, 1) : 
+        (($stats['events_this_month'] > 0) ? 100 : 0);
+    
+    $stats['bookings_change'] = ($stats['bookings_last_month'] > 0) ? 
+        round((($stats['bookings_this_month'] - $stats['bookings_last_month']) / $stats['bookings_last_month']) * 100, 1) : 
+        (($stats['bookings_this_month'] > 0) ? 100 : 0);
+    
+    $stats['revenue_change'] = ($stats['revenue_last_month'] > 0) ? 
+        round((($stats['revenue_this_month'] - $stats['revenue_last_month']) / $stats['revenue_last_month']) * 100, 1) : 
+        (($stats['revenue_this_month'] > 0) ? 100 : 0);
     
     // Additional variables for the old dashboard compatibility
     $total_users = $stats['total_users'];
@@ -48,19 +109,49 @@ try {
     $pending_events_count = $stats['pending_events'];
     $active_events_count = $stats['active_events'];
     
+    // Temporary debug - will show if stats calculation succeeded
+    // $message = "DEBUG: Stats loaded successfully - Users: {$stats['total_users']}, Events: {$stats['total_events']}, Bookings: {$stats['total_bookings']}, Revenue: {$stats['total_revenue']}";
+    
     // Get additional data for tabs
     $recent_users = $connection->query("SELECT u.*, r.role FROM users u JOIN roles r ON u.role_id = r.id ORDER BY u.created_at DESC LIMIT 5");
     $popular_events = $connection->query("SELECT e.*, c.category as category, COUNT(b.id) as booking_count FROM events e LEFT JOIN event_categories c ON e.category_id = c.id LEFT JOIN bookings b ON e.id = b.event_id WHERE e.status = 'approved' GROUP BY e.id ORDER BY booking_count DESC LIMIT 5");
     $all_users = $connection->query("SELECT u.*, r.role FROM users u JOIN roles r ON u.role_id = r.id ORDER BY u.created_at DESC");
-    $all_events = $connection->query("SELECT e.*, c.category as category, u.username as organizer_name FROM events e LEFT JOIN event_categories c ON e.category_id = c.id LEFT JOIN users u ON e.organizer_id = u.id ORDER BY e.created_at DESC");
+    $all_events = $connection->query("SELECT e.*, c.name as category, u.username as organizer_name FROM events e LEFT JOIN event_categories c ON e.category_id = c.id LEFT JOIN users u ON e.organizer_id = u.id ORDER BY e.created_at DESC");
     $recent_bookings = $connection->query("SELECT b.*, u.username, e.title as event_title FROM bookings b JOIN users u ON b.user_id = u.id JOIN events e ON b.event_id = e.id ORDER BY b.booking_date DESC LIMIT 10");
-    $categories = $connection->query("SELECT * FROM event_categories ORDER BY category");
+    $categories = $connection->query("SELECT * FROM event_categories ORDER BY name");
     $roles = $connection->query("SELECT * FROM roles WHERE id != 1 ORDER BY id"); // Exclude admin role from signup options
     
 } catch (Exception $e) {
-    $stats = array_fill_keys(['total_users', 'total_events', 'total_bookings', 'total_revenue', 'pending_events', 'active_events', 'new_users_today', 'bookings_today'], 0);
+    // Initialize all stats with safe defaults in case of database error
+    $stats = [
+        'total_users' => 0,
+        'total_events' => 0,
+        'total_bookings' => 0,
+        'total_revenue' => 0,
+        'pending_events' => 0,
+        'active_events' => 0,
+        'new_users_today' => 0,
+        'bookings_today' => 0,
+        'users_this_month' => 0,
+        'users_last_month' => 0,
+        'events_this_month' => 0,
+        'events_last_month' => 0,
+        'bookings_this_month' => 0,
+        'bookings_last_month' => 0,
+        'revenue_this_month' => 0,
+        'revenue_last_month' => 0,
+        'users_change' => 0,
+        'events_change' => 0,
+        'bookings_change' => 0,
+        'revenue_change' => 0
+    ];
+    
+    // Backward compatibility variables
     $total_users = $total_events = $total_bookings = $total_revenue = $pending_events_count = $active_events_count = 0;
     $recent_users = $popular_events = $all_users = $all_events = $recent_bookings = $categories = $roles = null;
+    
+    // Log the error for debugging
+    error_log("Admin Dashboard Statistics Error: " . $e->getMessage());
 }
 
 // Handle form actions
@@ -158,20 +249,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             case 'add_event':
                 $title = trim($_POST['title'] ?? '');
                 $description = trim($_POST['description'] ?? '');
-                $category = trim($_POST['category'] ?? ''); // Use category name directly since table has category field, not category_id
+                $category_id = intval($_POST['category'] ?? 0); // Convert to category_id
                 $venue = trim($_POST['venue'] ?? '');
-                $seats = intval($_POST['total_seats'] ?? 0);
+                $total_seats = intval($_POST['total_seats'] ?? 0);
                 $price = floatval($_POST['price'] ?? 0);
+                $event_date = $_POST['event_date'] ?? date('Y-m-d H:i:s', strtotime('+1 day'));
+                $status = $_POST['status'] ?? 'approved';
                 
                 // Get organizer ID (current admin user)
                 $organizer_id = $_SESSION['user_id'] ?? 1;
                 
-                if (empty($title) || empty($category) || empty($venue) || $seats <= 0) {
+                if (empty($title) || $category_id === 0 || empty($venue) || $total_seats <= 0) {
                     $error = "All fields are required and capacity must be greater than 0.";
                 } else {
-                    // Insert with the actual schema: title, category, seats, status, organizer_id, price, image, created_at
-                    $stmt = $connection->prepare("INSERT INTO events (title, category, seats, status, organizer_id, price) VALUES (?, ?, ?, 'approved', ?, ?)");
-                    $stmt->bind_param("ssiid", $title, $category, $seats, $organizer_id, $price);
+                    // Insert with the correct schema: organizer_id, category_id, title, description, venue, event_date, total_seats, price, status
+                    $stmt = $connection->prepare("INSERT INTO events (organizer_id, category_id, title, description, venue, event_date, total_seats, price, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->bind_param("iissssids", $organizer_id, $category_id, $title, $description, $venue, $event_date, $total_seats, $price, $status);
                     
                     if ($stmt->execute()) {
                         $message = "Event added successfully!";
@@ -195,14 +288,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $price = floatval($_POST['price'] ?? 0);
                 $status = $_POST['status'] ?? 'pending';
                 
-                if ($event_id === 0 || empty($title) || empty($description) || empty($event_date) || empty($venue) || $category_id === 0 || $total_seats <= 0) {
+                if ($event_id === 0 || empty($title) || empty($event_date) || empty($venue) || $category_id === 0 || $total_seats <= 0) {
                     echo json_encode(['success' => false, 'message' => 'All fields are required and capacity must be greater than 0.']);
                     exit;
                 }
                 
                 // Use correct column names based on actual schema
                 $stmt = $connection->prepare('UPDATE events SET title = ?, description = ?, event_date = ?, venue = ?, category_id = ?, total_seats = ?, price = ?, status = ? WHERE id = ?');
-                $stmt->bind_param('ssssidisi', $title, $description, $event_date, $venue, $category_id, $total_seats, $price, $status, $event_id);
+                $stmt->bind_param('ssssiidsi', $title, $description, $event_date, $venue, $category_id, $total_seats, $price, $status, $event_id);
                 
                 if ($stmt->execute()) {
                     echo json_encode(['success' => true, 'message' => 'Event updated successfully!']);
@@ -433,7 +526,22 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
     
     switch ($action) {
         case 'stats':
-            $response = ['success' => true, 'data' => $stats];
+            try {
+                // Recalculate stats for API to ensure fresh data
+                $api_stats = [];
+                $api_stats['total_users'] = $connection->query('SELECT COUNT(*) FROM users')->fetch_row()[0] ?? 0;
+                $api_stats['total_events'] = $connection->query('SELECT COUNT(*) FROM events')->fetch_row()[0] ?? 0;
+                $api_stats['total_bookings'] = $connection->query('SELECT COUNT(*) FROM bookings')->fetch_row()[0] ?? 0;
+                $api_stats['total_revenue'] = $connection->query("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status='confirmed'")->fetch_row()[0] ?? 0;
+                $api_stats['pending_events'] = $connection->query("SELECT COUNT(*) FROM events WHERE status='pending'")->fetch_row()[0] ?? 0;
+                $api_stats['active_events'] = $connection->query("SELECT COUNT(*) FROM events WHERE status='approved'")->fetch_row()[0] ?? 0;
+                $api_stats['new_users_today'] = $connection->query("SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURDATE()")->fetch_row()[0] ?? 0;
+                $api_stats['bookings_today'] = $connection->query("SELECT COUNT(*) FROM bookings WHERE DATE(booking_date) = CURDATE()")->fetch_row()[0] ?? 0;
+                
+                $response = ['success' => true, 'data' => $api_stats];
+            } catch (Exception $e) {
+                $response = ['success' => false, 'message' => 'Error fetching stats: ' . $e->getMessage()];
+            }
             break;
             
         case 'recent_users':
@@ -490,24 +598,13 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
             break;
             
         case 'pending_events':
-            $result = $connection->query("SELECT e.*, u.username as organizer_name, c.category as category_name
-                                        FROM events e 
-                                        LEFT JOIN users u ON e.organizer_id = u.id 
-                                        LEFT JOIN event_categories c ON e.category_id = c.id
-                                        WHERE e.status = 'pending'
-                                        ORDER BY e.created_at DESC");
-            $events = [];
-            while ($row = $result->fetch_assoc()) {
-                $events[] = $row;
-            }
-            $response = ['success' => true, 'data' => $events];
-            break;
-            
-        case 'all_events':
             try {
-                $result = $connection->query("SELECT e.*, u.username as organizer_name, e.category as category_name
+                $result = $connection->query("SELECT e.*, u.username as organizer_name, 
+                                            COALESCE(ec.name, e.category) as category_name
                                             FROM events e 
                                             LEFT JOIN users u ON e.organizer_id = u.id 
+                                            LEFT JOIN event_categories ec ON e.category_id = ec.id
+                                            WHERE e.status = 'pending'
                                             ORDER BY e.created_at DESC");
                 if (!$result) {
                     $response = ['success' => false, 'message' => 'Database error: ' . $connection->error];
@@ -518,7 +615,30 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                     // Add missing columns with default values for compatibility
                     $row['venue'] = $row['venue'] ?? 'TBD';
                     $row['event_date'] = $row['event_date'] ?? $row['created_at'];
-                    $row['total_seats'] = $row['seats'];
+                    $row['description'] = $row['description'] ?? '';
+                    $row['total_seats'] = $row['total_seats'] ?? $row['seats'] ?? 0;
+                    $row['price'] = $row['price'] ?? 0;
+                    $events[] = $row;
+                }
+                $response = ['success' => true, 'data' => $events];
+            } catch (Exception $e) {
+                $response = ['success' => false, 'message' => 'Error fetching pending events: ' . $e->getMessage()];
+            }
+            break;
+            
+        case 'all_events':
+            try {
+                $result = $connection->query("SELECT e.*, u.username as organizer_name, c.name as category_name
+                                            FROM events e 
+                                            LEFT JOIN users u ON e.organizer_id = u.id 
+                                            LEFT JOIN event_categories c ON e.category_id = c.id
+                                            ORDER BY e.created_at DESC");
+                if (!$result) {
+                    $response = ['success' => false, 'message' => 'Database error: ' . $connection->error];
+                    break;
+                }
+                $events = [];
+                while ($row = $result->fetch_assoc()) {
                     $events[] = $row;
                 }
                 $response = ['success' => true, 'data' => $events];
@@ -530,7 +650,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
         case 'event_details':
             $event_id = intval($_GET['id'] ?? 0);
             if ($event_id > 0) {
-                $stmt = $connection->prepare("SELECT e.*, u.username as organizer_name, c.category as category_name
+                $stmt = $connection->prepare("SELECT e.*, u.username as organizer_name, c.name as category_name
                                             FROM events e 
                                             LEFT JOIN users u ON e.organizer_id = u.id 
                                             LEFT JOIN event_categories c ON e.category_id = c.id
@@ -566,14 +686,71 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
             break;
             
         case 'recent_activity':
-            // Simulate activity feed
-            $activities = [
-                ['type' => 'user_register', 'message' => 'New user registered', 'time' => '2 minutes ago'],
-                ['type' => 'event_created', 'message' => 'New event submitted for approval', 'time' => '15 minutes ago'],
-                ['type' => 'booking_made', 'message' => 'New booking completed', 'time' => '1 hour ago'],
-                ['type' => 'payment_received', 'message' => 'Payment processed successfully', 'time' => '2 hours ago'],
-            ];
-            $response = ['success' => true, 'data' => $activities];
+            try {
+                $activities = [];
+                
+                // Get recent user registrations
+                $result = $connection->query("SELECT username, created_at FROM users ORDER BY created_at DESC LIMIT 3");
+                while ($row = $result->fetch_assoc()) {
+                    $timeAgo = time_elapsed_string($row['created_at']);
+                    $activities[] = [
+                        'type' => 'user_register',
+                        'message' => "New user '{$row['username']}' registered",
+                        'time' => $timeAgo,
+                        'timestamp' => strtotime($row['created_at'])
+                    ];
+                }
+                
+                // Get recent event submissions
+                $result = $connection->query("SELECT title, created_at, status FROM events ORDER BY created_at DESC LIMIT 3");
+                while ($row = $result->fetch_assoc()) {
+                    $timeAgo = time_elapsed_string($row['created_at']);
+                    $statusText = $row['status'] == 'pending' ? 'submitted for approval' : ($row['status'] == 'approved' ? 'approved' : 'rejected');
+                    $activities[] = [
+                        'type' => 'event_created',
+                        'message' => "Event '{$row['title']}' {$statusText}",
+                        'time' => $timeAgo,
+                        'timestamp' => strtotime($row['created_at'])
+                    ];
+                }
+                
+                // Get recent bookings
+                $result = $connection->query("SELECT b.booking_date, e.title, u.username FROM bookings b 
+                                           LEFT JOIN events e ON b.event_id = e.id 
+                                           LEFT JOIN users u ON b.user_id = u.id 
+                                           ORDER BY b.booking_date DESC LIMIT 3");
+                while ($row = $result->fetch_assoc()) {
+                    $timeAgo = time_elapsed_string($row['booking_date']);
+                    $activities[] = [
+                        'type' => 'booking_made',
+                        'message' => "'{$row['username']}' booked '{$row['title']}'",
+                        'time' => $timeAgo,
+                        'timestamp' => strtotime($row['booking_date'])
+                    ];
+                }
+                
+                // Get recent payments
+                $result = $connection->query("SELECT amount, created_at FROM payments WHERE status='confirmed' ORDER BY created_at DESC LIMIT 3");
+                while ($row = $result->fetch_assoc()) {
+                    $timeAgo = time_elapsed_string($row['created_at']);
+                    $activities[] = [
+                        'type' => 'payment_received',
+                        'message' => "Payment of $" . number_format($row['amount'], 2) . " processed",
+                        'time' => $timeAgo,
+                        'timestamp' => strtotime($row['created_at'])
+                    ];
+                }
+                
+                // Sort by timestamp (most recent first) and limit to 8
+                usort($activities, function($a, $b) {
+                    return $b['timestamp'] - $a['timestamp'];
+                });
+                $activities = array_slice($activities, 0, 8);
+                
+                $response = ['success' => true, 'data' => $activities];
+            } catch (Exception $e) {
+                $response = ['success' => false, 'message' => 'Error fetching recent activity: ' . $e->getMessage()];
+            }
             break;
             
         case 'all_bookings':
@@ -1725,6 +1902,16 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                     <div class="page-header">
                         <h1 class="page-title">Dashboard</h1>
                         <p class="page-subtitle">Welcome back! Here's an overview of your system.</p>
+                        <?php if (!empty($message)): ?>
+                            <div style="background: #28a745; color: white; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                                <?= htmlspecialchars($message) ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($error)): ?>
+                            <div style="background: #dc3545; color: white; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                                <?= htmlspecialchars($error) ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     
                     <!-- Statistics Grid -->
@@ -1737,8 +1924,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                 </div>
                             </div>
                             <div class="stat-value" id="stat-users"><?= $stats['total_users'] ?></div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
+                            <div class="stat-change <?= $stats['users_change'] >= 0 ? 'positive' : 'negative' ?>">
+                                <i class="fas fa-arrow-<?= $stats['users_change'] >= 0 ? 'up' : 'down' ?>"></i>
+                                <?= abs($stats['users_change']) ?>% from last month
                             </div>
                         </div>
                         
@@ -1750,8 +1938,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                 </div>
                             </div>
                             <div class="stat-value" id="stat-events"><?= $stats['total_events'] ?></div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
+                            <div class="stat-change <?= $stats['events_change'] >= 0 ? 'positive' : 'negative' ?>">
+                                <i class="fas fa-arrow-<?= $stats['events_change'] >= 0 ? 'up' : 'down' ?>"></i>
+                                <?= abs($stats['events_change']) ?>% from last month
                             </div>
                         </div>
                         
@@ -1763,8 +1952,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                 </div>
                             </div>
                             <div class="stat-value" id="stat-bookings"><?= $stats['total_bookings'] ?></div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
+                            <div class="stat-change <?= $stats['bookings_change'] >= 0 ? 'positive' : 'negative' ?>">
+                                <i class="fas fa-arrow-<?= $stats['bookings_change'] >= 0 ? 'up' : 'down' ?>"></i>
+                                <?= abs($stats['bookings_change']) ?>% from last month
                             </div>
                         </div>
                         
@@ -1776,8 +1966,9 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                 </div>
                             </div>
                             <div class="stat-value" id="stat-revenue">$<?= number_format($stats['total_revenue'], 0) ?></div>
-                            <div class="stat-change positive">
-                                <i class="fas fa-arrow-up"></i>
+                            <div class="stat-change <?= $stats['revenue_change'] >= 0 ? 'positive' : 'negative' ?>">
+                                <i class="fas fa-arrow-<?= $stats['revenue_change'] >= 0 ? 'up' : 'down' ?>"></i>
+                                <?= abs($stats['revenue_change']) ?>% from last month
                             </div>
                         </div>
                     </div>
@@ -2018,8 +2209,25 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                     </div>
                                     
                                     <div class="form-group">
+                                        <label for="new-event-description">Description</label>
+                                        <textarea id="new-event-description" name="description" rows="3" placeholder="Event description"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group">
                                         <label for="new-event-category">Category</label>
-                                        <input type="text" id="new-event-category" name="category" placeholder="e.g., Music, Sports, Arts" required>
+                                        <select id="new-event-category" name="category" required>
+                                            <option value="">Select Category</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="new-event-venue">Venue</label>
+                                        <input type="text" id="new-event-venue" name="venue" placeholder="Event location" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="new-event-date">Event Date</label>
+                                        <input type="datetime-local" id="new-event-date" name="event_date" required>
                                     </div>
                                     
                                     <div class="form-group">
@@ -2030,11 +2238,6 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                     <div class="form-group">
                                         <label for="new-event-price">Price ($)</label>
                                         <input type="number" id="new-event-price" name="price" min="0" step="0.01" required>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="new-event-venue">Venue (Optional)</label>
-                                        <input type="text" id="new-event-venue" name="venue" placeholder="Event location">
                                     </div>
                                     
                                     <div class="form-group">
@@ -2100,6 +2303,11 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                                     <div class="form-group">
                                         <label for="edit-event-title">Event Title</label>
                                         <input type="text" id="edit-event-title" name="title" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="edit-event-description">Description</label>
+                                        <textarea id="edit-event-description" name="description" rows="3"></textarea>
                                     </div>
                                     
                                     <div class="form-group">
@@ -2848,15 +3056,23 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
         }
         
         function loadDashboardData() {
-            // Refresh stats
+            // Refresh stats via API
             fetch('?api=data&action=stats')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         updateStats(data.data);
+                        console.log('Stats loaded via API:', data.data); // Debug log
+                    } else {
+                        console.error('API error:', data.message);
                     }
                 })
-                .catch(error => console.error('Error loading stats:', error));
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                });
+            
+            // Load other dashboard data
+            refreshActivity();
         }
         
         function updateStats(stats) {
@@ -3280,7 +3496,7 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
             
             events.forEach(event => {
                 console.log('Processing event:', event);
-                const eventDate = event.created_at ? new Date(event.created_at).toLocaleDateString() : 'N/A';
+                const eventDate = event.event_date ? new Date(event.event_date).toLocaleDateString() : 'N/A';
                 const statusClass = event.status === 'approved' ? 'status-approved' : 
                                    event.status === 'rejected' ? 'status-rejected' : 'status-pending';
                 
@@ -3288,10 +3504,10 @@ if (isset($_GET['api']) && $_GET['api'] === 'data') {
                     <tr>
                         <td>${event.id}</td>
                         <td><strong>${event.title}</strong></td>
-                        <td>${event.category || 'Uncategorized'}</td>
+                        <td>${event.category_name || 'Uncategorized'}</td>
                         <td>${eventDate}</td>
                         <td>${event.venue || 'TBD'}</td>
-                        <td>${event.seats}</td>
+                        <td>${event.total_seats}</td>
                         <td>$${parseFloat(event.price).toFixed(2)}</td>
                         <td>
                             <span class="status-badge ${statusClass}">
