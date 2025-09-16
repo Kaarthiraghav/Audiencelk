@@ -63,27 +63,35 @@ $stmt->execute();
 $events = $stmt->get_result();
 $stmt->close();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Book Event</title>
-    <link rel="stylesheet" href="../assets/main.css">
-</head>
-<body>
-    <h2>Book Event</h2>
-    <?php if (!empty($error)): ?>
-        <div class="message error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-    <form method="post">
-        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
-        <select name="event_id">
-            <?php while ($row = $events->fetch_assoc()): ?>
-                <option value="<?= $row['id'] ?>"> <?= htmlspecialchars($row['title']) ?> (Seats: <?= $row['total_seats'] ?>)</option>
-            <?php endwhile; ?>
-        </select><br>
-        <input type="submit" value="Book">
-    </form>
-    <a href="manage_bookings.php">Back</a>
-</body>
-</html>
+<?php
+$pageTitle = 'Book Event';
+include '../includes/header.php';
+?>
+
+<div class="HomeCards1">
+    <div class="card">
+        <form method="post" class="beautiful-form">
+            <h2 style="margin-bottom: 18px; font-size: 2em; color: #FFD700; letter-spacing: 1px; text-align:center;">Book Event</h2>
+            
+            <?php if (!empty($error)): ?>
+                <div class="alert" style="background-color: #ff4d4d; color: white; padding: 15px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                    <?= htmlspecialchars($error) ?>
+                </div>
+            <?php endif; ?>
+            
+            <div class="form-group">
+                <label for="event_id">Select Event</label>
+                <select id="event_id" name="event_id" required>
+                    <?php while ($row = $events->fetch_assoc()): ?>
+                        <option value="<?= $row['id'] ?>"><?= htmlspecialchars($row['title']) ?> (Seats: <?= $row['seats'] ?>)</option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
+            
+            <button type="submit" class="button-exploreevents" style="width:100%;margin-top:18px;">Book Now</button>
+            <a href="manage_bookings.php" class="button-backtohome" style="margin-top:18px;width:100%;text-align:center;">Back to My Bookings</a>
+        </form>
+    </div>
+</div>
+
+<?php include '../includes/footer.php'; ?>

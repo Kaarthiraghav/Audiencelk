@@ -7,10 +7,28 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf_token = $_SESSION['csrf_token'];
 include '../includes/db_connect.php';
-if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'organizer')) {
+if (!isset($_SESSION['role_id']) || ($_SESSION['role_id'] !== 1 && $_SESSION['role_id'] !== 2)) {
     header('Location: ../auth/login.php');
     exit;
 }
+
+// Handle quick approval/rejection from admin dashboard
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id']) && isset($_POST['action'])) {
+    $event_id = intval($_POST['event_id']);
+    $action = $_POST['action'];
+    
+    if ($action === 'approve' || $action === 'reject') {
+        $status = ($action === 'approve') ? 'approved' : 'rejected';
+        $stmt = $connection->prepare("UPDATE events SET status=? WHERE id=?");
+        $stmt->bind_param('si', $status, $event_id);
+        $stmt->execute();
+        $stmt->close();
+        header('Location: ' . $_SERVER['HTTP_REFERER'] ?? '../dashboards/admin_dashboard.php');
+        exit;
+    }
+}
+
+// Regular event editing
 $id = intval($_GET['id'] ?? 0);
 if ($id) {
     $stmt = $connection->prepare("SELECT * FROM events WHERE id = ?");
@@ -40,36 +58,74 @@ if ($id) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Event</title>
-    <link rel="stylesheet" href="../assets/main.css">
-</head>
-<body>
-    <h2>Edit Event</h2>
-    <?php if ($event): ?>
-    <form method="post" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
-        <input type="text" name="title" value="<?= htmlspecialchars($event['title']) ?>" required><br>
-        <select name="category">
-            <option value="cultural" <?= $event['category']=='cultural'?'selected':'' ?>>Cultural</option>
-            <option value="academic" <?= $event['category']=='academic'?'selected':'' ?>>Academic</option>
-            <option value="sports" <?= $event['category']=='sports'?'selected':'' ?>>Sports</option>
-        </select><br>
-        <input type="number" name="seats" value="<?= $event['seats'] ?>" required><br>
-        <select name="status">
-            <option value="pending" <?= $event['status']=='pending'?'selected':'' ?>>Pending</option>
-            <option value="approved" <?= $event['status']=='approved'?'selected':'' ?>>Approved</option>
-        </select><br>
-        <input type="file" name="image" accept="image/*"><br>
-        <?php if ($event['image']): ?>
-            <img src="../assets/<?= htmlspecialchars($event['image']) ?>" width="100"><br>
-        <?php endif; ?>
-        <input type="submit" value="Update Event">
-    </form>
-    <?php endif; ?>
-    <a href="manage_events.php">Back</a>
-</body>
-</html>
+<?php
+$pageTitle = 'Edit Event';
+include '../includes/header.php';
+// Fetch categories for dropdown
+$categories_result = $connection->query('SELECT name FROM event_categories');
+$categories = [];
+while ($cat = $categories_result->fetch_assoc()) {
+    $categories[] = $cat['name'];
+}
+?>
+    <div class="HomeCards1">
+        <div class="card">
+            <?php if ($event): ?>
+            <form method="post" enctype="multipart/form-data" class="beautiful-form">
+                <h2 style="margin-bottom: 18px; font-size: 2em; color: #FFD700; letter-spacing: 1px; text-align:center;">Edit Event</h2>
+                
+                <div class="form-group">
+                    <label for="title">Event Title</label>
+                    <input type="text" id="title" name="title" value="<?= htmlspecialchars($event['title']) ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?= $cat ?>" <?= $event['category']==$cat?'selected':'' ?>><?= $cat ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="seats">Available Seats</label>
+                    <input type="number" id="seats" name="seats" value="<?= $event['seats'] ?>" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="pending" <?= $event['status']=='pending'?'selected':'' ?>>Pending</option>
+                        <option value="approved" <?= $event['status']=='approved'?'selected':'' ?>>Approved</option>
+                        <option value="cancelled" <?= $event['status']=='cancelled'?'selected':'' ?>>Cancelled</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Event Image</label>
+                    <input type="file" id="image" name="image" accept="image/*">
+                </div>
+                
+                <?php if ($event['image']): ?>
+                <div class="form-group">
+                    <label>Current Image</label>
+                    <div class="current-image" style="margin-top: 10px;">
+                        <img src="../assets/<?= htmlspecialchars($event['image']) ?>" width="150" style="border-radius: 5px; border: 2px solid #FFD700;">
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <button type="submit" class="button-exploreevents" style="width:100%;margin-top:18px;">Update Event</button>
+                <a href="manage_events.php" class="button-backtohome" style="margin-top:18px;width:100%;text-align:center;">Back to Events</a>
+            </form>
+            <?php else: ?>
+            <div class="alert" style="background-color: #ff4d4d; color: white; padding: 15px; border-radius: 5px; text-align: center;">
+                <p>Event not found</p>
+                <a href="manage_events.php" class="button-backtohome" style="margin-top:18px;display:inline-block;padding:8px 16px;">Back to Events</a>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+<?php include '../includes/footer.php'; ?>

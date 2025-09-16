@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($row = $result->fetch_assoc()) {
             if (password_verify($password, $row['password'])) {
                 $_SESSION['user_id'] = $row['id'];
+                $_SESSION['username'] = $row['username'];
                 $_SESSION['role_id'] = $row['role_id'];
                 // Get role name
                 $roleStmt = $connection->prepare('SELECT role FROM roles WHERE id = ?');

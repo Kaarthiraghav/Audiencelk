@@ -160,10 +160,11 @@ include 'nav.php';
                 <li><a href="<?php echo BASE_URL?>index.php" style="font-weight: 600;">Home</a></li>
                 <li><a href="<?php echo BASE_URL?>events/view_events.php" style="font-weight: 600;">Events</a></li>
                 <?php if (isset($_SESSION['role_id'])): ?>
+<<<<<<< Updated upstream
                     <?php if ($_SESSION['role_id'] === 1): ?>
                         <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php" style="font-weight: 600;">Admin Dashboard</a></li>
                     <?php elseif ($_SESSION['role_id'] === 2): ?>
-                        <li><a href="<?php echo BASE_URL?>dashboards/organizer_dashboard.php" style="font-weight: 600;">Organizer Dashboard</a></li>
+                        <li><a href="<?php echo BASE_URL?>dashboards/organizer_dashboard.php">Organizer Dashboard</a></li>
                     <?php elseif ($_SESSION['role_id'] === 3): ?>
                         <li><a href="<?php echo BASE_URL?>dashboards/user_dashboard.php" style="font-weight: 600;">User Dashboard</a></li>
                     <?php endif; ?>
@@ -174,6 +175,11 @@ include 'nav.php';
         </nav>
     </div>
     <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['role_id']) && $_SESSION['role_id'] === 1): ?>
+            <a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php">
+                <button class="button-exploreevents" style="margin-left: 24px; background: linear-gradient(45deg, #FF6B6B, #FF6B6B); border: none;">Admin Panel</button>
+            </a>
+        <?php endif; ?>
         <a href="<?php echo BASE_URL?>auth/logout.php">
             <button class="button-exploreevents" style="margin-left: 24px; background: linear-gradient(45deg, #FFD700, #FFA500); border: none;">Logout</button>
         </a>

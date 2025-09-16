@@ -9,6 +9,15 @@ $csrf_token = $_SESSION['csrf_token'];
 $pageTitle = 'Manage Events';
 include '../includes/header.php';
 include '../includes/db_connect.php';
+?>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<?php
 if (!isset($_SESSION['role'])) {
     header('Location: ../auth/login.php');
     exit;

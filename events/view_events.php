@@ -9,14 +9,9 @@ $csrf_token = $_SESSION['csrf_token'];
 $pageTitle = 'View Events';
 include '../includes/header.php';
 include '../includes/db_connect.php';
-// Fetch approved events using prepared statement
-$sql = "SELECT e.*, c.category AS category FROM events e JOIN event_categories c ON e.category_id = c.id WHERE e.status=?";
-$stmt = $connection->prepare($sql);
-$status = 'approved';
-$stmt->bind_param("s", $status);
-$stmt->execute();
-$result = $stmt->get_result();
-$stmt->close();
+// Fetch approved events
+$result = $connection->query("SELECT e.*, c.name AS category FROM events e JOIN event_categories c ON e.category = c.name WHERE e.status='approved'");
+$result = $connection->query("SELECT e.*, c.name AS category_name FROM events e LEFT JOIN event_categories c ON e.category = c.name WHERE e.status='approved'");
 ?>
 <div class="HomeCards1">
 <div class="card">
@@ -28,9 +23,9 @@ $stmt->close();
             <tr>
                 <td><?= htmlspecialchars($row['title']) ?></td>
                 <td><?= htmlspecialchars($row['category']) ?></td>
-                <td><?= $row['total_seats'] ?></td>
+                <td><?= $row['seats'] ?></td>
                 <td>
-                    <?php if ($row['total_seats'] < 1): ?>
+                    <?php if ($row['seats'] < 1): ?>
                         <span style="color:gray;">Sold Out</span>
                     <?php elseif (isset($_SESSION['user_id']) && $_SESSION['role_id'] === 3): ?>
                         <form action="../bookings/add_booking.php" method="post" style="display:inline;">
