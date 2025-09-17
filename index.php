@@ -713,64 +713,72 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
     
-    <div class="card">
-        <h2>Tech Events</h2>
-        <p style="margin-top: 15px; text-align: center; font-size: 1.1em; line-height: 1.6; color: #ddd;">
+    <div class="card" style="width: 48%; margin: 0 auto 20px auto; display: inline-block; vertical-align: top;">
+        <h2 style="text-align: center; color: #FFD700; font-size: 1.8em; padding-bottom: 15px; border-bottom: 2px solid rgba(255, 215, 0, 0.3);">Tech Events</h2>
+        <p style="margin: 20px 0; text-align: center; font-size: 1.1em; line-height: 1.6; color: #ddd;">
             Stay ahead of the curve with the latest trends and innovations in technology by attending our cutting-edge tech events.
             Network with industry professionals.
         </p>
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="events/view_events.php" class="button-exploreevents" style="padding: 10px 20px;">Explore Tech Events</a>
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="events/view_events.php" class="button-exploreevents" style="padding: 12px 25px; font-size: 1.05em; background: linear-gradient(45deg, #FFD700, #FFA500);">EXPLORE TECH EVENTS</a>
         </div>
     </div>
     
-    <div class="card">
-        <h2>Hackathons</h2>
-        <p style="margin-top: 15px; text-align: center; font-size: 1.1em; line-height: 1.6; color: #ddd;">
+    <div class="card" style="width: 48%; margin: 0 auto 20px auto; display: inline-block; vertical-align: top;">
+        <h2 style="text-align: center; color: #FFD700; font-size: 1.8em; padding-bottom: 15px; border-bottom: 2px solid rgba(255, 215, 0, 0.3);">Hackathons</h2>
+        <p style="margin: 20px 0; text-align: center; font-size: 1.1em; line-height: 1.6; color: #ddd;">
             Collaborate, code, and compete in our hackathons—perfect for creative problem solvers and tech enthusiasts.
             Build innovative solutions with like-minded individuals.
         </p>
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="events/view_events.php" class="button-exploreevents" style="padding: 10px 20px;">Join Hackathons</a>
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="events/view_events.php" class="button-exploreevents" style="padding: 12px 25px; font-size: 1.05em; background: linear-gradient(45deg, #FFD700, #FFA500);">JOIN HACKATHONS</a>
         </div>
     </div>
 </div>
 
-<div style="text-align: center; margin: 60px 0 40px 0;">
+<style>
+    .cta-button-container .button-backtohome:hover {
+        background-color: #FFD700 !important;
+        color: #121212 !important;
+        box-shadow: 0 7px 20px rgba(255, 215, 0, 0.3);
+    }
+</style>
+
+<div style="text-align: center; margin: 80px auto 60px auto; max-width: 1000px; background: rgba(26, 26, 26, 0.7); padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid #333;">
     <div style="margin-bottom: 30px;">
-        <h2 style="color: #FFD700; margin-bottom: 20px; font-size: 2em;">Ready to Get Started?</h2>
-        <p style="color: #ddd; font-size: 1.1em; margin-bottom: 30px;">
+        <h2 style="color: #FFD700; margin-bottom: 20px; font-size: 2.2em; text-transform: uppercase; letter-spacing: 1px;">Ready to Get Started?</h2>
+        <p style="color: #ddd; font-size: 1.2em; margin-bottom: 30px; max-width: 700px; margin-left: auto; margin-right: auto;">
             Discover amazing events happening around you or create your own unforgettable experience.
         </p>
     </div>
     
-    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+    <div class="cta-button-container" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
         <a href="events/view_events.php">
-            <button class="button-exploreevents" style="padding: 15px 30px; font-size: 1.1em;">
+            <button class="button-exploreevents" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 25px;">
                 <svg class="svgIcon" viewBox="0 0 512 512" height="1.2em" xmlns="http://www.w3.org/2000/svg" style="margin-right: 10px;">
                     <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm50.7-186.9L162.4 380.6c-19.4 7.5-38.5-11.6-31-31l55.5-144.3c3.3-8.5 9.9-15.1 18.4-18.4l144.3-55.5c19.4-7.5 38.5 11.6 31 31L325.1 306.7c-3.2 8.5-9.9 15.1-18.4 18.4zM288 256a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path>
                 </svg>
-                Explore Events
+                EXPLORE EVENTS
             </button>
         </a>
         
         <?php if (!isset($_SESSION['user_id'])): ?>
             <a href="auth/register.php">
-                <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em;">
-                    Join Community
+                <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #FFD700; background: transparent; color: #FFD700; transition: all 0.3s ease; border-radius: 25px;">
+                    JOIN COMMUNITY
                 </button>
             </a>
         <?php else: ?>
             <?php if ($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
                 <a href="events/add_event.php">
-                    <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em;">
-                        Create Event
+                    <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #FFD700; background: transparent; color: #FFD700; transition: all 0.3s ease; border-radius: 25px;">
+                        CREATE EVENT
                     </button>
                 </a>
             <?php else: ?>
                 <a href="bookings/add_booking.php">
-                    <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em;">
-                        Book Event
+                    <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #FFD700; background: transparent; color: #FFD700; transition: all 0.3s ease; border-radius: 25px;">
+                        BOOK EVENT
                     </button>
                 </a>
             <?php endif; ?>

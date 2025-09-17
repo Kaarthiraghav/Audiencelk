@@ -6,26 +6,7 @@ include 'includes/db_connect.php';
 
 <style>
 /* About Page Specific Styles */
-.about-hero {
-    padding: var(--space-5xl) 0;
-    background: var(--gradient-dark);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.about-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 70% 70%, rgba(220, 20, 60, 0.1) 0%, transparent 50%);
-    animation: backgroundPulse 15s ease-in-out infinite;
-}
+/* Removing old styles since we're using inline styles for the hero section */
 
 .about-container {
     max-width: 1000px;
@@ -35,16 +16,7 @@ include 'includes/db_connect.php';
     z-index: 2;
 }
 
-.about-title {
-    font-size: clamp(2.5rem, 6vw, 4rem);
-    font-weight: var(--font-weight-black);
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: var(--space-2xl);
-    animation: slideUpFade 1s ease-out;
-}
+/* Removed old about-title styles as we're using inline styles */
 
 .about-subtitle {
     font-size: 1.3rem;
@@ -304,6 +276,17 @@ include 'includes/db_connect.php';
     }
 }
 
+.page-gradient-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%),
+                radial-gradient(ellipse at center, rgba(50, 50, 50, 0.4) 0%, transparent 70%);
+    z-index: -1;
+}
+
 @keyframes backgroundPulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
@@ -327,24 +310,41 @@ include 'includes/db_connect.php';
 </style>
 
 <!-- Hero Section -->
-<section class="about-hero">
-    <div class="about-container">
-        <h1 class="about-title">About AudienceLK</h1>
-        <p class="about-subtitle">
-            Connecting communities through meaningful events and unforgettable experiences.
-            We're building the future of event discovery and management.
+<section class="hero-section" style="position: relative; height: 70vh; min-height: 500px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%); border-bottom: 1px solid rgba(255, 215, 0, 0.2);">
+    <div class="hero-background" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);"></div>
+    
+    <div class="hero-content" style="text-align: center; z-index: 2; max-width: 1000px; padding: 0 var(--space-xl); animation: fadeInUp 1.2s ease-out;">
+        <h1 style="font-size: clamp(3.5rem, 8vw, 5rem); font-weight: 800; color: #FFD700; margin-bottom: var(--space-xl); line-height: 1.1;">About AudienceLK</h1>
+        <p style="font-size: clamp(1.1rem, 3vw, 1.5rem); color: #ddd; margin: 0 auto; max-width: 800px; line-height: 1.6;">
+            Your premier platform for discovering and managing amazing events. Connect with your community through unforgettable experiences.
         </p>
     </div>
 </section>
 
+<!-- Decorative divider -->
+<div style="width: 100%; height: 6px; background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent); margin: 0 auto;"></div>
+
+<style>
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
 <!-- Main Content Sections -->
-<section class="about-sections">
+<section class="about-sections" style="margin-top: 60px;">
     <div class="about-container">
         <!-- Vision Section -->
         <div class="about-section scroll-reveal">
-            <h2 class="section-title">Our Vision</h2>
+            <h2 class="section-title" style="position: relative;">Our Vision</h2>
             <div class="section-content">
-                <p>
+                <p style="font-size: 1.25rem; line-height: 1.8;">
                     At AudienceLK, our vision is to create a vibrant and sustainable platform where communities can discover, share, and participate in meaningful events. 
                     We believe in connecting people through experiences that inspire, educate, and empower, while promoting inclusive gatherings that bring people together across cultures and interests.
                 </p>
@@ -451,25 +451,22 @@ include 'includes/db_connect.php';
 </section>
 
 <!-- Call to Action Section -->
-<section class="cta-section scroll-reveal">
+<section class="cta-section scroll-reveal" style="background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%); border-top: 1px solid rgba(255, 215, 0, 0.2); margin-top: 60px; padding: 80px 0;">
     <div class="about-container">
-        <h2 class="section-title">Ready to Get Started?</h2>
-        <p class="section-content" style="margin-bottom: 0;">
+        <h2 class="section-title" style="color: #FFD700; font-size: 2.8rem;">Ready to Get Started?</h2>
+        <p class="section-content" style="margin-bottom: 30px; font-size: 1.2rem; color: #ddd;">
             Join our community today and discover amazing events or start organizing your own.
         </p>
         
-        <div class="cta-buttons">
-            <a href="events/view_events.php" class="btn btn-primary btn-lg">
-                <i class="fas fa-calendar-alt"></i>
-                Explore Events
+        <div class="cta-buttons" style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+            <a href="events/view_events.php" class="button-exploreevents" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(45deg, #FFD700, #FFA500); border-radius: 25px;">
+                <i class="fas fa-calendar-alt" style="margin-right: 8px;"></i>
+                EXPLORE EVENTS
             </a>
-            <a href="auth/register.php" class="btn btn-outline btn-lg">
-                <i class="fas fa-user-plus"></i>
-                Join Community
-            </a>
-            <a href="contactus.php" class="btn btn-secondary btn-lg">
-                <i class="fas fa-envelope"></i>
-                Contact Us
+            <a href="auth/register.php" style="text-decoration: none;">
+                <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #FFD700; background: transparent; color: #FFD700 !important; transition: all 0.3s ease; border-radius: 25px;">
+                    JOIN COMMUNITY
+                </button>
             </a>
         </div>
         
