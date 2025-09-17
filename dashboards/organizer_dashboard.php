@@ -1,6 +1,8 @@
 <?php
 // Organizer Dashboard: stats, analytics, events
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $pageTitle = 'Organizer Dashboard';
 include '../includes/db_connect.php';
 include '../includes/admin_layout.php';

@@ -1,6 +1,8 @@
 <?php
 // User Dashboard: Show bookings, allow cancel, profile management
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $pageTitle = 'User Dashboard';
 include '../includes/header.php';
 include '../includes/db_connect.php';
