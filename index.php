@@ -36,13 +36,15 @@ try {
     $total_bookings = $connection->query('SELECT COUNT(*) FROM bookings')->fetch_row()[0];
     
     // Get featured events
-    $featured_events = $connection->query('SELECT e.*, c.name as category_name FROM events e 
+    $featured_events_result = $connection->query('SELECT e.*, c.name as category_name FROM events e 
                                          LEFT JOIN event_categories c ON e.category_id = c.id 
                                          WHERE e.status = "approved" AND e.event_date > NOW() 
                                          ORDER BY e.event_date ASC LIMIT 3');
+    $featured_events = $featured_events_result ? $featured_events_result : null;
     
     // Get event categories
-    $categories = $connection->query('SELECT * FROM event_categories ORDER BY name');
+    $categories_result = $connection->query('SELECT * FROM event_categories ORDER BY name');
+    $categories = $categories_result ? $categories_result : null;
 } catch (Exception $e) {
     $total_events = $total_users = $upcoming_events = $total_bookings = 0;
     $featured_events = $categories = null;
@@ -51,14 +53,7 @@ try {
 
 <style>
 /* Homepage Specific Styles */
-
-body {
-background-color: #121212;
-color: #FFD700;
-font-family: 'Arial', sans-serif;
-/* transition: opacity 0.5s; */
-opacity: 1 !important;
-}
+/* Removing conflicting body styles that override header.php */
 .hero-section {
     position: relative;
     min-height: 100vh;
@@ -527,7 +522,7 @@ opacity: 1 !important;
     </div>
     
     <div class="events-grid">
-        <?php if ($featured_events && $featured_events->num_rows > 0): ?>
+        <?php if ($featured_events && is_object($featured_events) && $featured_events->num_rows > 0): ?>
             <?php while ($event = $featured_events->fetch_assoc()): ?>
                 <div class="event-card">
                     <div class="event-image">
@@ -574,7 +569,7 @@ opacity: 1 !important;
     </div>
     
     <div class="categories-grid">
-        <?php if ($categories && $categories->num_rows > 0): ?>
+        <?php if ($categories && is_object($categories) && $categories->num_rows > 0): ?>
             <?php 
             $category_icons = [
                 'Cultural' => 'fas fa-theater-masks',
@@ -782,8 +777,5 @@ document.addEventListener('DOMContentLoaded', function() {
         <?php endif; ?>
     </div>
 </div>
-
-
-</script>
 
 <?php include 'includes/footer.php'; ?>

@@ -1,4 +1,4 @@
-<script src="<?php echo BASE_URL?>assets/scripts.js"></script>
+<script src="<?php echo BASE_URL; ?>assets/scripts.js"></script>
 <footer id="main-footer" style="background-color: #1a1a1a; color: #FFD700; padding: 30px 0 15px 0; text-align: center; border-top: 2px solid #FFD700; margin-top: 50px; box-shadow: 0 -4px 12px rgba(0,0,0,0.2);">
     <div class="footer-content" style="display: flex; justify-content: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
         <div style="flex: 1; max-width: 300px; padding: 0 15px; text-align: left;">

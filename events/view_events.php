@@ -16,6 +16,9 @@ include '../includes/db_connect.php';
 try {
     $sql = "SELECT e.*, c.category AS category_name FROM events e LEFT JOIN event_categories c ON e.category_id = c.id WHERE e.status = ? ORDER BY e.created_at DESC";
     $stmt = $connection->prepare($sql);
+    if (!$stmt) {
+        throw new Exception("Prepare failed: " . $connection->error);
+    }
     $status = 'approved';
     $stmt->bind_param("s", $status);
     $stmt->execute();
@@ -34,7 +37,7 @@ try {
         <div class="message error" style="margin-bottom: 20px; text-align: center;"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
     
-    <?php if ($result && $result->num_rows > 0): ?>
+    <?php if ($result && is_object($result) && $result->num_rows > 0): ?>
         <div class="events-container" style="overflow-x: auto;">
             <table style="width: 100%; min-width: 600px; border-collapse: separate; border-spacing: 0; background: #1a1a1a; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                 <thead>
@@ -97,7 +100,7 @@ try {
     <?php endif; ?>
     
     <div style="text-align: center; margin-top: 30px;">
-        <a href="<?= BASE_URL ?>index.php" class="button-backtohome">Back to Home</a>
+        <a href="<?= BASE_URL; ?>index.php" class="button-backtohome">Back to Home</a>
     </div>
 </div>
 </div>

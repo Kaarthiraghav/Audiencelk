@@ -11,19 +11,26 @@ include 'nav.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="<?php echo BASE_URL?>assets/main.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/main.css">
     <style>
         body {
             background-color: #121212;
             color: #FFD700;
             font-family: 'Arial', sans-serif;
             transition: opacity 0.5s;
+            <?php if ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false): ?>
+            /* Fix for local environment only */
+            opacity: 1 !important;
+            <?php else: ?>
             opacity: 0;
+            <?php endif; ?>
         }
         
+        <?php if (!($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false)): ?>
         body.fade-in {
             opacity: 1;
         }
+        <?php endif; ?>
         
         body, h1, h2, h3, h4, h5, h6, p, label, th, td, ul, li, a, div, span {
             color: #FFD700 !important;

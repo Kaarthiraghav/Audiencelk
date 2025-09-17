@@ -217,7 +217,7 @@ try {
     </div>
     
     <div style="text-align: center; margin-top: 40px;">
-        <a href="<?= BASE_URL ?>auth/logout.php" class="button-backtohome">Logout</a>
+        <a href="<?= BASE_URL; ?>auth/logout.php" class="button-backtohome">Logout</a>
     </div>
   </div>
 </div>

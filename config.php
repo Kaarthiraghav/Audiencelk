@@ -9,7 +9,7 @@ $is_local = ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST
 
 // Base URL Configuration
 if ($is_local) {
-    define('BASE_URL', 'http://localhost:8000');
+    define('BASE_URL', 'http://localhost/Audiencelk/');
     define('SITE_ROOT', '/Audiencelk');
 } else {
     // Update with your actual domain
@@ -47,9 +47,12 @@ if ($is_local) {
 }
 
 // Session Configuration
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', !$is_local); // HTTPS only in production
+// Only set session parameters if session hasn't started yet
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_secure', !$is_local); // HTTPS only in production
+}
 
 // InfinityFree specific settings
 if (!$is_local) {

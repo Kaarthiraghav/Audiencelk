@@ -31,7 +31,7 @@ $recent_users_with_roles = $connection->query("SELECT u.id, u.username, u.email,
                                           ORDER BY u.created_at DESC LIMIT 5");
 ?>
     <h2>Admin Dashboard</h2>
-    <a href="<?php echo BASE_URL ?>events/add_event_categories.php" style="margin-left:16px;">Add Event Category</a>
+    <a href="<?php echo BASE_URL; ?>events/add_event_categories.php" style="margin-left:16px;">Add Event Category</a>
     <ul>
         <li>Total Users: <?= $total_users ?></li>
         <li>Total Events: <?= $total_events ?></li>
@@ -41,12 +41,14 @@ $recent_users_with_roles = $connection->query("SELECT u.id, u.username, u.email,
     <h3>Most Popular Events</h3>
     <table border="1" cellpadding="5" style="width:100%;margin-bottom:24px;">
         <tr><th>Event</th><th>Bookings</th></tr>
-        <?php while ($row = $popular->fetch_assoc()): ?>
+        <?php if(isset($popular_events) && is_object($popular_events)): ?>
+        <?php while ($row = $popular_events->fetch_assoc()): ?>
         <tr>
             <td><?= htmlspecialchars($row['title']) ?></td>
             <td><?= $row['bookings'] ?></td>
         </tr>
         <?php endwhile; ?>
+        <?php endif; ?>
     </table>
     <h3>Manage</h3>
     <ul>
