@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$locked_out) {
     $_SESSION['admin_last_attempt'] = time();
     
     // Validate admin key (additional security layer)
-    $valid_admin_key = 'ALK-ADMIN-2025'; // You should change this to a secure key
+    $valid_admin_key = 'admin'; // You should change this to a secure key
     
     if (empty($email) || empty($password) || empty($admin_key)) {
         $error = 'All fields are required for admin access.';

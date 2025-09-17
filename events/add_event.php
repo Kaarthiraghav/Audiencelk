@@ -21,7 +21,7 @@ $success = '';
 
 // Fetch event categories
 try {
-    $categories_result = $connection->query("SELECT * FROM event_categories ORDER BY name");
+    $categories_result = $connection->query("SELECT * FROM event_categories ORDER BY category");
 } catch (Exception $e) {
     $categories_result = null;
 }
@@ -36,6 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $category_id = intval($_POST['category_id'] ?? 0);
         $venue = trim($_POST['venue'] ?? '');
         $event_date = $_POST['event_date'] ?? '';
+        if (!empty($event_date) && preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $event_date)) {
+            $converted_event_date = date('Y-m-d H:i:s', strtotime($event_date));
+        } else {
+            $converted_event_date = '';
+        }
         $total_seats = intval($_POST['total_seats'] ?? 0);
         $price = floatval($_POST['price'] ?? 0);
         $organizer_id = $_SESSION['user_id'];
@@ -53,9 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Please select a valid category.';
         } elseif (empty($venue)) {
             $error = 'Event venue is required.';
-        } elseif (empty($event_date)) {
-            $error = 'Event date and time is required.';
-        } elseif (strtotime($event_date) <= time()) {
+        } elseif (empty($converted_event_date)) {
+            $error = 'Event date and time is required and must be valid.';
+        } elseif (strtotime($converted_event_date) <= time()) {
             $error = 'Event date must be in the future.';
         } elseif ($total_seats <= 0) {
             $error = 'Number of seats must be greater than 0.';
@@ -76,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     // Insert event
                     $stmt = $connection->prepare("INSERT INTO events (organizer_id, category_id, title, description, venue, event_date, total_seats, price, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())");
-                    $stmt->bind_param("iisssiid", $organizer_id, $category_id, $title, $description, $venue, $event_date, $total_seats, $price);
+                    $stmt->bind_param("iissssid", $organizer_id, $category_id, $title, $description, $venue, $converted_event_date, $total_seats, $price);
                     
                     if ($stmt->execute()) {
                         $success = 'Event created successfully! It will be reviewed by administrators before being published.';
@@ -86,11 +91,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Regenerate CSRF token
                         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     } else {
-                        $error = 'Failed to create event. Please try again.';
+                        $error = 'Failed to create event: ' . htmlspecialchars($stmt->error);
                     }
                 }
             } catch (Exception $e) {
-                $error = 'Database error. Please try again later.';
+                // $error = 'Database error';
+                $error = 'Database error: ' . htmlspecialchars($e->getMessage());
             }
         }
     }
@@ -138,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php if ($categories_result && $categories_result->num_rows > 0): ?>
                             <?php while ($category = $categories_result->fetch_assoc()): ?>
                                 <option value="<?= $category['id'] ?>" <?= (isset($category_id) && $category_id == $category['id']) ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($category['name'] ?? $category['category'] ?? 'Unknown') ?>
+                                    <?= htmlspecialchars($category['category'] ?? $category['category'] ?? 'Unknown') ?>
                                 </option>
                             <?php endwhile; ?>
                         <?php else: ?>

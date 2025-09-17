@@ -65,7 +65,7 @@ CREATE TABLE `bookings` (
   KEY `event_id_idx` (`event_id`),
   CONSTRAINT `fk_bookings_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-)
+);
 
 -- Create payments table
 CREATE TABLE `payments` (
@@ -81,3 +81,12 @@ CREATE TABLE `payments` (
 
 -- Insert default roles
 INSERT INTO `roles` (`role`) VALUES ('Admin'), ('Organizer'), ('User');
+
+INSERT INTO `users` (`username`, `email`, `password`, `role_id`)
+VALUES (
+  'admin',
+  'admin@audiencelk.com',
+  '$2y$10$havksN4EClqymAnKlReTUermPHmdDjaGS22Et44aF/cmxBKKa8K4e',
+  1
+);
+

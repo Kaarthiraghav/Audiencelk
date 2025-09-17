@@ -17,7 +17,7 @@ if (!isset($_SERVER['HTTP_HOST']) || $_SERVER['HTTP_HOST'] === 'localhost' || st
     $DB_HOST = 'localhost';
     $DB_USER = 'root';
     $DB_PASS = '';
-    $DB_NAME = 'audiencelk';  // Local database name
+    $DB_NAME = 'if0_39624525_audiencelk';  // Local database name
 }
 
 $connection = mysqli_connect($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);

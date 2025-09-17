@@ -1,4 +1,5 @@
 
+
 <?php
 // Admin Dashboard: Comprehensive admin control panel
 if (session_status() === PHP_SESSION_NONE) {
@@ -23,6 +24,33 @@ $error = '';
 if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
+            case 'add_user':
+                // Only allow admins
+                if ($_SESSION['role_id'] === 1) {
+                    $new_username = trim($_POST['new_username'] ?? '');
+                    $new_email = trim($_POST['new_email'] ?? '');
+                    $new_password = $_POST['new_password'] ?? '';
+                    $new_role = intval($_POST['new_role'] ?? 3);
+                    if (empty($new_username) || empty($new_email) || empty($new_password) || !in_array($new_role, [1,2,3])) {
+                        $error = "All fields are required and role must be valid.";
+                    } elseif (!filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
+                        $error = "Invalid email address.";
+                    } elseif (strlen($new_password) < 8) {
+                        $error = "Password must be at least 8 characters.";
+                    } else {
+                        $hash = password_hash($new_password, PASSWORD_DEFAULT);
+                        $stmt = $connection->prepare("INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)");
+                        $stmt->bind_param("sssi", $new_username, $new_email, $hash, $new_role);
+                        if ($stmt->execute()) {
+                            $message = "User added successfully!";
+                        } else {
+                            $error = "Failed to add user. Email may already exist.";
+                        }
+                    }
+                } else {
+                    $error = "Only admins can add users.";
+                }
+                break;
             case 'approve_event':
                 $event_id = intval($_POST['event_id']);
                 $stmt = $connection->prepare("UPDATE events SET status = 'approved' WHERE id = ?");
@@ -62,10 +90,9 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') 
                 
             case 'add_category':
                 $cat_name = trim($_POST['category_name']);
-                $cat_desc = trim($_POST['category_description']);
                 if (!empty($cat_name)) {
-                    $stmt = $connection->prepare("INSERT INTO event_categories (name, description) VALUES (?, ?)");
-                    $stmt->bind_param("ss", $cat_name, $cat_desc);
+                    $stmt = $connection->prepare("INSERT INTO event_categories (category) VALUES (?)");
+                    $stmt->bind_param("s", $cat_name);
                     if ($stmt->execute()) {
                         $message = "Category added successfully!";
                     } else {
@@ -94,6 +121,7 @@ try {
     
 } catch (Exception $e) {
     $error = "Error loading dashboard data.";
+    echo $e->getMessage(); // For debugging purposes only
 }
 ?>
 
@@ -162,31 +190,35 @@ try {
                 </tr>
             </thead>
             <tbody>
-                <?php while ($event = $pending_events_list->fetch_assoc()): ?>
-                <tr>
-                    <td>
-                        <strong><?= htmlspecialchars($event['title']) ?></strong>
-                        <br><small style="color: #aaa;"><?= htmlspecialchars(substr($event['description'], 0, 80)) ?>...</small>
-                    </td>
-                    <td><?= htmlspecialchars($event['organizer_name']) ?></td>
-                    <td><?= date('M d, Y H:i', strtotime($event['event_date'])) ?></td>
-                    <td><?= htmlspecialchars($event['venue']) ?></td>
-                    <td><?= $event['total_seats'] ?></td>
-                    <td>LKR <?= number_format($event['price'], 2) ?></td>
-                    <td>
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="action" value="approve_event">
-                            <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
-                            <button type="submit" class="admin-btn admin-btn-small admin-btn-success" onclick="return confirm('Approve this event?')">✅ Approve</button>
-                        </form>
-                        <form method="post" style="display: inline;">
-                            <input type="hidden" name="action" value="reject_event">
-                            <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
-                            <button type="submit" class="admin-btn admin-btn-small admin-btn-danger" onclick="return confirm('Reject this event?')">❌ Reject</button>
-                        </form>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
+                    <?php while ($event = $pending_events_list->fetch_assoc()): ?>
+                    <tr>
+                        <td><strong><?= htmlspecialchars($event['title']) ?></strong></td>
+                        <td><?= htmlspecialchars($event['organizer_name']) ?></td>
+                        <td><?= date('M d, Y H:i', strtotime($event['event_date'])) ?></td>
+                        <td><?= htmlspecialchars($event['venue']) ?></td>
+                        <td><?= $event['total_seats'] ?></td>
+                        <td>LKR <?= number_format($event['price'], 2) ?></td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="edit_event">
+                                <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
+                                <button type="submit" class="admin-btn admin-btn-small">✏️ Edit</button>
+                            </form>
+                            <form method="post" style="display:inline;" onsubmit="return confirm('Delete this event? This action cannot be undone.')">
+                                <input type="hidden" name="action" value="delete_event">
+                                <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
+                                <button type="submit" class="admin-btn admin-btn-small admin-btn-danger">🗑️ Delete</button>
+                            </form>
+                            <?php if ($event['status'] === 'pending'): ?>
+                            <form method="post" style="display:inline;" onsubmit="return confirm('Approve this event?')">
+                                <input type="hidden" name="action" value="approve_event">
+                                <input type="hidden" name="event_id" value="<?= $event['id'] ?>">
+                                <button type="submit" class="admin-btn admin-btn-small admin-btn-success">✅ Approve</button>
+                            </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
             </tbody>
         </table>
     </div>
@@ -241,6 +273,39 @@ try {
     </div>
 </div>
 
+<!-- Add User (Admin Only) -->
+<?php if ($_SESSION['role_id'] === 1): ?>
+<div class="admin-card" id="add-user">
+    <h2>👤 Add New User</h2>
+    <form method="post" style="max-width: 500px; margin: 0 auto;">
+        <div class="form-group">
+            <label for="new_username">Username</label>
+            <input type="text" name="new_username" id="new_username" required maxlength="255" class="admin-input">
+        </div>
+        <div class="form-group">
+            <label for="new_email">Email</label>
+            <input type="email" name="new_email" id="new_email" required maxlength="255" class="admin-input">
+        </div>
+        <div class="form-group">
+            <label for="new_password">Password</label>
+            <input type="password" name="new_password" id="new_password" required minlength="8" maxlength="255" class="admin-input">
+        </div>
+        <div class="form-group">
+            <label for="new_role">Role</label>
+            <select name="new_role" id="new_role" required class="admin-input">
+                <option value="1">Admin</option>
+                <option value="2">Organizer</option>
+                <option value="3">User</option>
+            </select>
+        </div>
+        <div class="form-actions" style="margin-top: 20px;">
+            <input type="hidden" name="action" value="add_user">
+            <button type="submit" class="admin-btn admin-btn-success">➕ Add User</button>
+        </div>
+    </form>
+</div>
+<?php endif; ?>
+
 <!-- Category Management -->
 <div class="admin-card" id="categories">
     <h2>🏷️ Category Management</h2>
@@ -252,10 +317,6 @@ try {
             <div>
                 <label style="display: block; margin-bottom: 5px; color: #FFD700;">Category Name</label>
                 <input type="text" name="category_name" required maxlength="150" style="width: 100%; padding: 8px; background: #1a1a1a; border: 1px solid #444; border-radius: 4px; color: #fff;">
-            </div>
-            <div>
-                <label style="display: block; margin-bottom: 5px; color: #FFD700;">Description</label>
-                <input type="text" name="category_description" maxlength="255" style="width: 100%; padding: 8px; background: #1a1a1a; border: 1px solid #444; border-radius: 4px; color: #fff;">
             </div>
             <div>
                 <input type="hidden" name="action" value="add_category">
@@ -274,7 +335,6 @@ try {
                 <tr>
                     <th>ID</th>
                     <th>Name</th>
-                    <th>Description</th>
                     <th>Events</th>
                     <th>Created</th>
                 </tr>
@@ -284,7 +344,6 @@ try {
                 <tr>
                     <td><?= $category['id'] ?></td>
                     <td><strong><?= htmlspecialchars($category['category']) ?></strong></td>
-                    <td><?= htmlspecialchars($category['description'] ?? 'No description') ?></td>
                     <td><?= $category['event_count'] ?> events</td>
                     <td><?= date('M d, Y', strtotime($category['created_at'] ?? 'now')) ?></td>
                 </tr>
