@@ -197,7 +197,7 @@ try {
 <div class="admin-card" id="users">
     <h2>👥 User Management</h2>
     <?php
-    $users = $connection->query("SELECT u.*, r.role FROM users u JOIN roles r ON u.role_id = r.id ORDER BY u.created_at DESC LIMIT 15");
+    $users = $connection->query("SELECT u.*, r.role FROM users u JOIN roles r ON u.role_id = r.id ORDER BY u.id DESC LIMIT 15");
     ?>
     <div style="overflow-x: auto;">
         <table class="admin-table">
@@ -266,7 +266,7 @@ try {
     
     <!-- Existing Categories -->
     <?php
-    $categories = $connection->query("SELECT c.*, COUNT(e.id) as event_count FROM event_categories c LEFT JOIN events e ON c.id = e.category_id GROUP BY c.id ORDER BY c.name");
+    $categories = $connection->query("SELECT c.*, COUNT(e.id) as event_count FROM event_categories c LEFT JOIN events e ON c.id = e.category_id GROUP BY c.id ORDER BY c.category");
     ?>
     <div style="overflow-x: auto;">
         <table class="admin-table">
@@ -283,7 +283,7 @@ try {
                 <?php while ($category = $categories->fetch_assoc()): ?>
                 <tr>
                     <td><?= $category['id'] ?></td>
-                    <td><strong><?= htmlspecialchars($category['name']) ?></strong></td>
+                    <td><strong><?= htmlspecialchars($category['category']) ?></strong></td>
                     <td><?= htmlspecialchars($category['description'] ?? 'No description') ?></td>
                     <td><?= $category['event_count'] ?> events</td>
                     <td><?= date('M d, Y', strtotime($category['created_at'] ?? 'now')) ?></td>

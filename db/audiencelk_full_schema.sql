@@ -24,9 +24,7 @@ CREATE TABLE `users` (
 -- Create event categories table
 CREATE TABLE `event_categories` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(150) NOT NULL,
-  `description` TEXT,
-  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `category` VARCHAR(150) NOT NULL,
   PRIMARY KEY (`id`)
 );
 
@@ -38,18 +36,14 @@ CREATE TABLE `events` (
   `title` VARCHAR(255) NOT NULL,
   `description` LONGTEXT,
   `venue` VARCHAR(255) NOT NULL,
-  `location` VARCHAR(255),
   `event_date` DATETIME NOT NULL,
   `total_seats` INT NOT NULL,
   `price` DECIMAL(10,2) NOT NULL,
   `status` ENUM('pending','approved','rejected') DEFAULT 'pending',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `organizer_id_idx` (`organizer_id`),
   KEY `cat_id_idx` (`category_id`),
-  KEY `status_idx` (`status`),
-  KEY `event_date_idx` (`event_date`),
   CONSTRAINT `fk_events_categories` FOREIGN KEY (`category_id`) REFERENCES `event_categories` (`id`)
     ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_events_organizer` FOREIGN KEY (`organizer_id`) REFERENCES `users` (`id`)
@@ -58,21 +52,20 @@ CREATE TABLE `events` (
 
 -- Create bookings table
 CREATE TABLE `bookings` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
-  `event_id` INT NOT NULL,
-  `booking_number` VARCHAR(9) NOT NULL,
-  `booking_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `seats` INT NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `event_id` int NOT NULL,
+  `booking_number` varchar(16) NOT NULL,
+  `booking_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `seats` int NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `booking_number_unique` (`booking_number`),
   KEY `user_id_idx` (`user_id`),
   KEY `event_id_idx` (`event_id`),
-  CONSTRAINT `fk_bookings_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-    ON DELETE CASCADE ON UPDATE CASCADE
-);
+  CONSTRAINT `fk_bookings_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_bookings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+)
 
 -- Create payments table
 CREATE TABLE `payments` (
@@ -88,14 +81,3 @@ CREATE TABLE `payments` (
 
 -- Insert default roles
 INSERT INTO `roles` (`role`) VALUES ('Admin'), ('Organizer'), ('User');
-
--- Insert default categories
-INSERT INTO `event_categories` (`name`, `description`) VALUES 
-('Cultural', 'Cultural events including traditional performances, art exhibitions, and heritage celebrations'),
-('Entertainment', 'Entertainment events including concerts, shows, and performances'),
-('Sports', 'Sports events including matches, tournaments, and fitness activities'),
-('Educational', 'Educational events including workshops, seminars, and training sessions'),
-('Business', 'Business events including conferences, networking, and corporate gatherings'),
-('Technology', 'Technology events including tech talks, product launches, and innovation showcases'),
-('Art', 'Art events including exhibitions, gallery openings, and creative workshops'),
-('Food', 'Food events including festivals, tastings, and culinary experiences');

@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Security check - only admin users can access this layout
-if (!isset($_SESSION['role_id']) || intval($_SESSION['role_id']) !== 1) {
+if (!isset($_SESSION['role_id']) || !in_array(intval($_SESSION['role_id']), [1,2])) {
     header('Location: ../auth/login.php');
     exit;
 }

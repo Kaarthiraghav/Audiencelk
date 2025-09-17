@@ -25,7 +25,7 @@ if ($event_id <= 0) {
 } else {
     // Fetch event details
     try {
-        $stmt = $connection->prepare("SELECT e.*, c.name as category_name FROM events e LEFT JOIN event_categories c ON e.category_id = c.id WHERE e.id = ? AND e.status = 'approved'");
+        $stmt = $connection->prepare("SELECT e.*, c.category as category_name FROM events e LEFT JOIN event_categories c ON e.category_id = c.id WHERE e.id = ? AND e.status = 'approved'");
         $stmt->bind_param("i", $event_id);
         $stmt->execute();
         $result = $stmt->get_result();

@@ -141,7 +141,7 @@ try {
     <div style="text-align: center; margin: 30px 0;">
         <a href="../events/view_events.php" class="button-exploreevents" style="margin: 0 10px;">Browse Events</a>
         <a href="../bookings/add_booking.php" class="button-exploreevents" style="margin: 0 10px;">Book New Event</a>
-        <a href="../bookings/manage_bookings.php" class="button-exploreevents" style="margin: 0 10px;">Manage Bookings</a>
+        <!-- <a href="../bookings/manage_bookings.php" class="button-exploreevents" style="margin: 0 10px;">Manage Bookings</a> -->
     </div>
     
     <!-- Recent Bookings -->
