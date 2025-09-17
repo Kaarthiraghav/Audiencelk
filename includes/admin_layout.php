@@ -3,35 +3,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Security check - only admin users can access this layout
+if (!isset($_SESSION['role_id']) || intval($_SESSION['role_id']) !== 1) {
+    header('Location: ../auth/login.php');
+    exit;
+}
+
 include 'nav.php'; // Include BASE_URL definition
-
-// Set role label and sidebar menu
-if (!isset($roleLabel)) {
-    $roleLabel = (isset($_SESSION['role_id']) && $_SESSION['role_id'] == 2) ? 'Organizer' : 'Admin';
-}
-
-if (!isset($sidebarMenu)) {
-    if ($roleLabel === 'Admin') {
-        $sidebarMenu = [
-            ['Dashboard', '📊', BASE_URL.'dashboards/admin_dashboard.php', 'Admin Dashboard'],
-            ['Users', '👥', BASE_URL.'users/admin_manage_users.php', 'Manage Users'],
-            ['Events', '🎭', BASE_URL.'events/admin_manage_events.php', 'Manage Events'],
-            ['Categories', '🏷️', BASE_URL.'events/admin_categories.php', 'Manage Categories'],
-            ['Bookings', '🎫', BASE_URL.'bookings/admin_manage_bookings.php', 'Manage Bookings'],
-            ['Public Site', '🏠', BASE_URL.'index.php', ''],
-            ['Logout', '🚪', BASE_URL.'auth/logout.php', '', 'color: #ff6b6b;'],
-        ];
-    } else {
-        $sidebarMenu = [
-            ['Dashboard', '📊', BASE_URL.'dashboards/organizer_dashboard.php', 'Organizer Dashboard'],
-            ['Events', '🎭', BASE_URL.'events/manage_events.php', 'Manage Events'],
-            ['Add Event', '➕', BASE_URL.'events/add_event.php', 'Add Event'],
-            ['Bookings', '🎫', BASE_URL.'bookings/manage_bookings.php', 'Manage Bookings'],
-            ['Public Site', '🏠', BASE_URL.'index.php', ''],
-            ['Logout', '🚪', BASE_URL.'auth/logout.php', '', 'color: #ff6b6b;'],
-        ];
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -332,18 +310,31 @@ if (!isset($sidebarMenu)) {
         <div class="admin-sidebar">
             <div class="admin-logo">
                 <h2>AudienceLK</h2>
-                <div style="font-size: 14px; color: #aaa; margin-top: 5px;"><?php echo $roleLabel; ?> Panel</div>
+                <div style="font-size: 14px; color: #aaa; margin-top: 5px;">Admin Panel</div>
             </div>
+            
             <ul class="admin-menu">
-                <?php foreach ($sidebarMenu as $item): ?>
-                    <li>
-                        <a href="<?php echo $item[2]; ?>"
-                           <?php echo (isset($item[4]) ? 'style="'.$item[4].'"' : ''); ?>
-                           <?php echo ($pageTitle == $item[3]) ? 'class="active"' : ''; ?>>
-                            <span><?php echo $item[1]; ?></span> <?php echo $item[0]; ?>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php" <?php echo $pageTitle == 'Admin Dashboard' ? 'class="active"' : ''; ?>>
+                    <span>📊</span> Dashboard
+                </a></li>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php#users" <?php echo $pageTitle == 'Manage Users' ? 'class="active"' : ''; ?>>
+                    <span>👥</span> Users
+                </a></li>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php#events" <?php echo $pageTitle == 'Manage Events' ? 'class="active"' : ''; ?>>
+                    <span>🎭</span> Events
+                </a></li>
+                <li><a href="<?php echo BASE_URL?>dashboards/admin_dashboard.php#categories" <?php echo $pageTitle == 'Manage Categories' ? 'class="active"' : ''; ?>>
+                    <span>🏷️</span> Categories
+                </a></li>
+                <li><a href="<?php echo BASE_URL?>bookings/admin_manage_bookings.php" <?php echo $pageTitle == 'Manage Bookings' ? 'class="active"' : ''; ?>>
+                    <span>🎫</span> Bookings
+                </a></li>
+                <li><a href="<?php echo BASE_URL?>index.php">
+                    <span>🏠</span> Public Site
+                </a></li>
+                <li><a href="<?php echo BASE_URL?>auth/logout.php" style="color: #ff6b6b;">
+                    <span>🚪</span> Logout
+                </a></li>
             </ul>
         </div>
         
@@ -351,11 +342,11 @@ if (!isset($sidebarMenu)) {
         <div class="admin-main">
             <div class="admin-header">
                 <div class="admin-title">
-                    <h1><?php echo isset($pageTitle) ? $pageTitle : $roleLabel . ' Dashboard'; ?></h1>
+                    <h1><?php echo isset($pageTitle) ? $pageTitle : 'Admin Dashboard'; ?></h1>
                 </div>
                 <div class="admin-actions">
                     <div class="admin-user">
-                        <span>👤 <?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : $roleLabel; ?></span>
+                        <span>👤 <?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin'; ?></span>
                     </div>
                     <a href="<?php echo BASE_URL?>auth/logout.php" class="admin-btn admin-btn-small">Logout</a>
                 </div>
