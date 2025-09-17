@@ -1,4 +1,89 @@
 <?php 
+// Additional PHP code...
+?>
+<style>
+/* Homepage Specific Styles */
+/* Additional styles... */
+</style>
+<style>
+    .homepage-card {
+        margin-bottom: 32px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+        border: 1.5px solid #FFD700;
+        transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .homepage-card:hover {
+        box-shadow: 0 12px 32px rgba(255,215,0,0.18), 0 2px 8px rgba(0,0,0,0.18);
+        transform: translateY(-4px) scale(1.02);
+    }
+    .homepage-card .button-exploreevents {
+        min-width: 180px;
+        white-space: normal;
+        font-size: 1em;
+    }
+</style>
+<div class="card homepage-card">
+    <h2>Tech Events</h2>
+    <p style="margin-top: 15px; text-align: center; font-size: 1.1em; line-height: 1.6; color: #ddd;">
+        Stay ahead of the curve with the latest trends and innovations in technology by attending our cutting-edge tech events.
+        Network with industry professionals.
+    </p>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="events/view_events.php" class="button-exploreevents" style="padding: 10px 20px;">Explore Tech Events</a>
+    </div>
+</div>
+<div class="card homepage-card">
+    <h2>Hackathons</h2>
+    <p style="margin-top: 15px; text-align: center; font-size: 1.1em; line-height: 1.6; color: #ddd;">
+        Collaborate, code, and compete in our hackathons—perfect for creative problem solvers and tech enthusiasts.
+        Build innovative solutions with like-minded individuals.
+    </p>
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="events/view_events.php" class="button-exploreevents" style="padding: 10px 20px;">Join Hackathons</a>
+    </div>
+</div>
+<div style="text-align: center; margin: 60px 0 40px 0;">
+    <div style="margin-bottom: 30px;">
+        <h2 style="color: #FFD700; margin-bottom: 20px; font-size: 2em;">Ready to Get Started?</h2>
+        <p style="color: #ddd; font-size: 1.1em; margin-bottom: 30px;">
+            Discover amazing events happening around you or create your own unforgettable experience.
+        </p>
+    </div>
+    
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <a href="events/view_events.php">
+            <button class="button-exploreevents" style="padding: 15px 30px; font-size: 1.1em;">
+                <svg class="svgIcon" viewBox="0 0 512 512" height="1.2em" xmlns="http://www.w3.org/2000/svg" style="margin-right: 10px;">
+                    <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm50.7-186.9L162.4 380.6c-19.4 7.5-38.5-11.6-31-31l55.5-144.3c3.3-8.5 9.9-15.1 18.4-18.4l144.3-55.5c19.4-7.5 38.5 11.6 31 31L325.1 306.7c-3.2 8.5-9.9 15.1-18.4 18.4zM288 256a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path>
+                </svg>
+                Explore Events
+            </button>
+        </a>
+        
+        <?php if (!isset($_SESSION['user_id'])): ?>
+            <a href="auth/register.php">
+                <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em;">
+                    Join Community
+                </button>
+            </a>
+        <?php else: ?>
+            <?php if ($_SESSION['role_id'] === 1 || $_SESSION['role_id'] === 2): ?>
+                <a href="events/add_event.php">
+                    <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em;">
+                        Create Event
+                    </button>
+                </a>
+            <?php else: ?>
+                <a href="bookings/add_booking.php">
+                    <button class="button-backtohome" style="padding: 15px 30px; font-size: 1.1em;">
+                        Book Event
+                    </button>
+                </a>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
+</div>
+<?php 
 $pageTitle = 'Home - AudienceLK';
 include 'includes/header.php'; 
 include 'includes/db_connect.php'; 

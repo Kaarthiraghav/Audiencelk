@@ -52,13 +52,13 @@ try {
                         <td style="padding: 15px; color: #FFD700;"><?= htmlspecialchars($row['title']) ?></td>
                         <td style="padding: 15px; text-align: center; color: #ddd;"><?= htmlspecialchars($row['category_name'] ?? 'Uncategorized') ?></td>
                         <td style="padding: 15px; text-align: center; color: #ddd; font-weight: bold;">
-                            <?= $row['seats'] > 0 ? $row['seats'] : '<span style="color: #ff6b6b;">0</span>' ?>
+                            <?= $row['total_seats'] > 0 ? $row['total_seats'] : '<span style="color: #ff6b6b;">0</span>' ?>
                         </td>
                         <td style="padding: 15px; text-align: center; color: #ddd; font-weight: bold;">
                             $<?= number_format($row['price'], 2) ?>
                         </td>
                         <td style="padding: 15px; text-align: center;">
-                            <?php if ($row['seats'] < 1): ?>
+                            <?php if ($row['total_seats'] < 1): ?>
                                 <span style="color: #ff6b6b; font-weight: bold; padding: 8px 16px; background: rgba(255, 107, 107, 0.1); border-radius: 20px; border: 1px solid #ff6b6b;">Sold Out</span>
                             <?php elseif (isset($_SESSION['user_id']) && $_SESSION['role_id'] === 3): ?>
                                 <form action="../bookings/add_booking.php" method="post" style="display: inline;">
