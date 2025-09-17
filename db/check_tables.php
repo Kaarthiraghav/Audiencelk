@@ -1,5 +1,5 @@
 <?php
-include 'includes/db_connect.php';
+include '../includes/db_connect.php';
 
 echo "Database Tables:\n";
 $result = $connection->query('SHOW TABLES');

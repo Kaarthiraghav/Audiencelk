@@ -40,10 +40,9 @@ try {
     } else {
         // Create new admin
         $hashed_password = password_hash($admin_password, PASSWORD_DEFAULT);
-        $created_at = date('Y-m-d H:i:s');
         
-        $insert_stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id, created_at) VALUES (?, ?, ?, ?, ?)');
-        $insert_stmt->bind_param('sssis', $admin_username, $admin_email, $hashed_password, $admin_role_id, $created_at);
+        $insert_stmt = $connection->prepare('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)');
+        $insert_stmt->bind_param('sssi', $admin_username, $admin_email, $hashed_password, $admin_role_id);
         
         if ($insert_stmt->execute()) {
             echo "<div style='color: green; padding: 20px; background: #f0f8ff; border-radius: 5px; margin: 20px 0;'>";

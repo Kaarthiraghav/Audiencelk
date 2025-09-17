@@ -8,11 +8,11 @@ if (session_status() === PHP_SESSION_NONE) {
 // Update these with your actual InfinityFree database credentials
 $DB_HOST = 'sql210.infinityfree.com';  // InfinityFree MySQL hostname
 $DB_USER = 'if0_39624525';             // Your InfinityFree username (without database name)
-$DB_PASS = '';    // Your InfinityFree database password
+$DB_PASS = 'Raveen18';    // Your InfinityFree database password
 $DB_NAME = 'if0_39624525_audiencelk';  // Your database name
 
 // For local development, you can use environment detection
-if ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
+if (!isset($_SERVER['HTTP_HOST']) || $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
     // Local XAMPP settings
     $DB_HOST = 'localhost';
     $DB_USER = 'root';

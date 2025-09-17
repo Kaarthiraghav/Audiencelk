@@ -1,28 +1,4 @@
 <?php 
-// Additional PHP code...
-?>
-<style>
-/* Homepage Specific Styles */
-/* Additional styles... */
-</style>
-<style>
-    .homepage-card {
-        margin-bottom: 32px;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-        border: 1.5px solid #FFD700;
-        transition: box-shadow 0.3s, transform 0.3s;
-    }
-    .homepage-card:hover {
-        box-shadow: 0 12px 32px rgba(255,215,0,0.18), 0 2px 8px rgba(0,0,0,0.18);
-        transform: translateY(-4px) scale(1.02);
-    }
-    .homepage-card .button-exploreevents {
-        min-width: 180px;
-        white-space: normal;
-        font-size: 1em;
-    }
-</style>
-<?php 
 $pageTitle = 'Home - AudienceLK';
 require_once 'config.php';
 include 'includes/header.php'; 
