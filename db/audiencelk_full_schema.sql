@@ -1,6 +1,5 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS audiencelk;
-USE audiencelk;
+USE if0_39624525_audiencelk;
 
 -- Create roles table
 CREATE TABLE `roles` (
