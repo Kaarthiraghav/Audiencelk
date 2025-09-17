@@ -5,7 +5,7 @@
  */
 
 // Environment detection
-$is_local = ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
+$is_local = (!isset($_SERVER['HTTP_HOST']) || $_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false);
 
 // Base URL Configuration
 if ($is_local) {
@@ -28,7 +28,7 @@ if ($is_local) {
     // InfinityFree production settings
     define('DB_HOST', 'sql210.infinityfree.com');
     define('DB_USER', 'if0_39624525');
-    define('DB_PASS', '');  // Replace with your actual password
+    define('DB_PASS', 'Raveen18');  // Replace with your actual password
     define('DB_NAME', 'if0_39624525_audiencelk');
 }
 

@@ -1,6 +1,8 @@
 <?php
 // Organizer Dashboard: stats, analytics, events
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $pageTitle = 'Organizer Dashboard';
 include '../includes/db_connect.php';
 include '../includes/admin_layout.php';
@@ -13,14 +15,14 @@ $organizer_id = $_SESSION['user_id'];
 
 // Fetch events by organizer - using correct column names
 $events_query = "SELECT e.*, 
-                        COALESCE(ec.name, e.category) as category_name,
-                        e.total_seats,
-                        e.price,
-                        e.status
-                 FROM events e 
-                 LEFT JOIN event_categories ec ON e.category_id = ec.id 
-                 WHERE e.organizer_id = ?
-                 ORDER BY e.event_date DESC";
+               ec.category as category_name,
+               e.total_seats,
+               e.price,
+               e.status
+           FROM events e 
+           LEFT JOIN event_categories ec ON e.category_id = ec.id 
+           WHERE e.organizer_id = ?
+           ORDER BY e.event_date DESC";
 
 $stmt = $connection->prepare($events_query);
 $stmt->bind_param('i', $organizer_id);
@@ -278,6 +280,7 @@ $events = $stmt->get_result();
     }
     ?>
   </div>
+</div>
 </div>
 
 <?php include '../includes/footer.php'; ?>
