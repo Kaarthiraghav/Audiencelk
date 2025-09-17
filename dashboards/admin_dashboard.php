@@ -2,6 +2,7 @@
 <?php
 // Modern SPA Admin Dashboard with collapsible sidebar
 session_start();
+require_once '../config.php';
 include '../includes/db_connect.php';
 
 // Helper function to calculate time elapsed

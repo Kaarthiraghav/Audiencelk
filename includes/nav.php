@@ -1,3 +1,4 @@
 <?php
-
-define('BASE_URL', 'http://localhost/AudienceLK/');
+// Include configuration for BASE_URL
+require_once __DIR__ . '/../config.php';
+?>

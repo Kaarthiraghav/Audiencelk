@@ -1,5 +1,6 @@
 <?php 
 $pageTitle = 'Home - AudienceLK';
+require_once 'config.php';
 include 'includes/header.php'; 
 include 'includes/db_connect.php'; 
 
